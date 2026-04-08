@@ -38,7 +38,7 @@ export async function GET() {
 
     // Fallback API documentation when the backend is not available
     const fallbackDocs = {
-      title: "ChordMini Audio Analysis API",
+      title: "Eclectify Audio Analysis API",
       version: "1.0.0",
       description: "API for audio analysis including beat detection, chord recognition, and lyrics fetching",
       base_url: backendUrl,

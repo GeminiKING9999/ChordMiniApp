@@ -93,17 +93,17 @@ export async function generateAnalyzeMetadata(videoId: string): Promise<Metadata
   const videoInfo = await fetchVideoInfo(videoId);
   const analysisResults = await checkAnalysisResults(videoId);
   
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://chordmini.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eclecticemporium.store';
   const pageUrl = `${baseUrl}/analyze/${videoId}`;
   
   // Generate title and description
   const title = videoInfo?.title 
-    ? `${videoInfo.title} - Chord Analysis | ChordMini`
-    : `Music Analysis ${videoId} | ChordMini`;
+    ? `${videoInfo.title} - Chord Analysis | Eclectify`
+    : `Music Analysis ${videoId} | Eclectify`;
     
   const description = videoInfo?.title
-    ? `AI-powered chord recognition and beat detection analysis of "${videoInfo.title}". Discover chord progressions, beats, and musical structure with ChordMini's advanced music analysis tools.`
-    : `AI-powered music analysis for video ${videoId}. Discover chord progressions, beats, and musical structure with ChordMini's advanced analysis tools.`;
+    ? `AI-powered chord recognition and beat detection analysis of "${videoInfo.title}". Discover chord progressions, beats, and musical structure with Eclectify's advanced music analysis tools.`
+    : `AI-powered music analysis for video ${videoId}. Discover chord progressions, beats, and musical structure with Eclectify's advanced analysis tools.`;
 
   // Generate keywords
   const keywords = [
@@ -135,7 +135,7 @@ export async function generateAnalyzeMetadata(videoId: string): Promise<Metadata
       title,
       description,
       url: pageUrl,
-      siteName: 'ChordMini',
+      siteName: 'Eclectify',
       images: [
         {
           url: ogImageUrl,

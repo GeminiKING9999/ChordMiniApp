@@ -28,7 +28,7 @@ async function getRecentVideoIds(): Promise<string[]> {
  * Generate dynamic sitemap for ChordMini
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://chordmini.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eclecticemporium.store';
   const currentDate = new Date();
   
   // Static pages with high priority

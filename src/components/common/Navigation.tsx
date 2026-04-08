@@ -131,8 +131,8 @@ const Navigation: React.FC<NavigationProps> = ({ className = '', showStickySearc
           <Link href="/" className="flex items-center group">
             {/* Light theme logo - hidden in dark mode */}
             <Image
-              src="/chordMiniLogo.webp"
-              alt="ChordMini Logo"
+              src="/eclectifyLogo.webp"
+              alt="Eclectify Logo"
               width={40}
               height={40}
               sizes="40px"
@@ -141,16 +141,16 @@ const Navigation: React.FC<NavigationProps> = ({ className = '', showStickySearc
             />
             {/* Dark theme logo - hidden in light mode */}
             <Image
-              src="/chordMiniLogo-dark.webp"
-              alt="ChordMini Logo"
+              src="/eclectifyLogo-dark.webp"
+              alt="Eclectify Logo"
               width={40}
               height={40}
               sizes="40px"
               className="mr-2 rounded-lg hidden transition-all duration-200 group-hover:scale-105 dark:block dark:opacity-60 dark:group-hover:opacity-85"
               style={{ width: '40px', height: '40px' }}
             />
-            <h1 className="text-xl font-nunito font-extrabold text-foreground transition-colors duration-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 tracking-tight">
-              ChordMini
+            <h1 className="text-xl font-nunito font-extrabold text-foreground transition-colors duration-300 group-hover:text-purple-600 dark:group-hover:text-neon-purple tracking-tight">
+              Eclectify
             </h1>
           </Link>
         </NavbarBrand>
@@ -178,7 +178,7 @@ const Navigation: React.FC<NavigationProps> = ({ className = '', showStickySearc
                 className={`font-medium text-sm transition-all duration-200 ${
                   isActiveRoute(item.href)
                     ? 'text-foreground border border-default-400 dark:border-default-300'
-                    : 'hover:bg-blue-50 dark:hover:bg-default-200/20 text-black dark:text-foreground bg-transparent border border-transparent hover:border-blue-300 dark:hover:border-default-300'
+                    : 'hover:bg-purple-50 dark:hover:bg-default-200/20 text-black dark:text-foreground bg-transparent border border-transparent hover:border-purple-300 dark:hover:border-default-300'
                 }`}
                 size="sm"
                 radius="md"
@@ -194,7 +194,7 @@ const Navigation: React.FC<NavigationProps> = ({ className = '', showStickySearc
                 className={`font-medium text-sm transition-all duration-200 ${
                   isActiveRoute(item.href)
                     ? 'text-foreground border border-default-400 dark:border-default-300'
-                    : 'hover:bg-blue-50 dark:hover:bg-default-200/20 text-black dark:text-foreground bg-transparent border border-transparent hover:border-blue-300 dark:hover:border-default-300'
+                    : 'hover:bg-purple-50 dark:hover:bg-default-200/20 text-black dark:text-foreground bg-transparent border border-transparent hover:border-purple-300 dark:hover:border-default-300'
                 }`}
                 size="sm"
                 radius="md"
@@ -234,8 +234,8 @@ const Navigation: React.FC<NavigationProps> = ({ className = '', showStickySearc
                 }}
                 className={`w-full justify-start font-medium text-base transition-all duration-200 ${
                   isActiveRoute(item.href)
-                    ? 'bg-blue-600 text-white border border-blue-600'
-                    : 'text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
+                    ? 'bg-purple-600 text-white border border-purple-600'
+                    : 'text-gray-900 dark:text-white hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400'
                 }`}
                 size="lg"
               >
@@ -250,8 +250,8 @@ const Navigation: React.FC<NavigationProps> = ({ className = '', showStickySearc
                 onPress={() => setIsMobileMenuOpen(false)}
                 className={`w-full justify-start font-medium text-base transition-all duration-200 ${
                   isActiveRoute(item.href)
-                    ? 'bg-blue-600 text-white border border-blue-600'
-                    : 'text-gray-900 dark:text-white hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
+                    ? 'bg-purple-600 text-white border border-purple-600'
+                    : 'text-gray-900 dark:text-white hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400'
                 }`}
                 size="lg"
               >

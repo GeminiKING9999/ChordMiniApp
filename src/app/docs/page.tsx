@@ -210,7 +210,7 @@ export default function DocsPage() {
                     <FiCode className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                   </div>
                   <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                    ChordMini API Documentation
+                    Eclectify API Documentation
                   </h1>
                   <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                     A comprehensive guide to using our audio analysis API, covering beat detection, chord recognition, and more.
@@ -223,7 +223,7 @@ export default function DocsPage() {
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Getting Started</h2>
                 <div className="prose prose-gray dark:prose-invert max-w-none mb-8">
                   <p>
-                    The ChordMini API provides powerful audio analysis capabilities with no authentication required. Start making requests immediately to analyze audio files and extract musical information.
+                    The Eclectify API provides powerful audio analysis capabilities with no authentication required. Start making requests immediately to analyze audio files and extract musical information.
                   </p>
                 </div>
 
@@ -285,7 +285,7 @@ export default function DocsPage() {
                     <div>
                       <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2">No API Key Required</h3>
                       <p className="text-sm text-gray-700 dark:text-gray-300">
-                        The ChordMini API is currently open and does not require authentication. All endpoints are publicly accessible,
+                        The Eclectify API is currently open and does not require authentication. All endpoints are publicly accessible,
                         making it easy to get started immediately.
                       </p>
                     </div>
@@ -309,7 +309,7 @@ export default function DocsPage() {
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Rate Limits</h2>
                 <div className="prose prose-gray dark:prose-invert max-w-none mb-8">
                   <p>
-                    The ChordMini API implements production-grade rate limiting to ensure fair usage and system stability. Rate limits vary by endpoint based on computational requirements.
+                    The Eclectify API implements production-grade rate limiting to ensure fair usage and system stability. Rate limits vary by endpoint based on computational requirements.
                   </p>
                 </div>
                 <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
@@ -369,7 +369,7 @@ export default function DocsPage() {
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Available Models</h2>
                 <div className="prose prose-gray dark:prose-invert max-w-none mb-8">
                   <p>
-                    ChordMini provides multiple machine learning models for different audio analysis tasks. Each model is optimized for specific use cases and performance characteristics.
+                    Eclectify provides multiple machine learning models for different audio analysis tasks. Each model is optimized for specific use cases and performance characteristics.
                   </p>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Beat Detection Models</h3>
@@ -486,7 +486,7 @@ export default function DocsPage() {
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Usage Examples</h2>
                 <div className="prose prose-gray dark:prose-invert max-w-none mb-8">
                   <p>
-                    Here are some practical examples of how to use the ChordMini API using Javascript and cURL.
+                    Here are some practical examples of how to use the Eclectify API using Javascript and cURL.
                   </p>
                 </div>
 
@@ -540,7 +540,7 @@ console.log(result);`}
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">API Status</h2>
                 <div className="prose prose-gray dark:prose-invert max-w-none mb-8">
                   <p>
-                    Monitor the real-time status of ChordMini API services and endpoints.
+                    Monitor the real-time status of Eclectify API services and endpoints.
                   </p>
                 </div>
 

@@ -54,7 +54,7 @@ export function detectEnvironment(): EnvironmentConfig {
   } else if (envBaseUrl) {
     baseUrl = envBaseUrl;
   } else {
-    baseUrl = isDevelopment ? 'http://localhost:3000' : 'https://chordmini.com';
+    baseUrl = isDevelopment ? 'http://localhost:3000' : 'https://eclecticemporium.store';
   }
 
   // Determine strategy based on manual override or URL detection

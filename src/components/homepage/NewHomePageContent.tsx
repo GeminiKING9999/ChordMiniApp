@@ -296,17 +296,17 @@ function NewHomePageContentInner() {
               >
                 <h3 className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
                   <HiSparkles className="w-5 h-5 text-primary" />
-                  Support ChordMini
+                  Support Eclectify
                 </h3>
                 <Chip size="sm" variant="flat" color="success">
                   Open Source
                 </Chip>
 
                 <p className="text-md text-gray-700 dark:text-gray-200 leading-relaxed">
-                  ChordMini is a free, open-source project. The backend server is not guaranteed to be maintained and running for extended periods due to budget constraints. We try our best to keep it running and add new features/models. If you&apos;d like to support the project to keep the backend server running, you can use the donation link. We really appreciate your support! <br />
+                  Eclectify is a free, open-source project. The backend server is not guaranteed to be maintained and running for extended periods due to budget constraints. We try our best to keep it running and add new features/models. If you&apos;d like to support the project to keep the backend server running, you can use the donation link. We really appreciate your support! <br />
                   <em className="text-sm">Note: current server is CPU-based computation, GPU acceleration is more than 10 times faster.</em>
                   <br />
-                  <em className="text-sm">You can always clone/self-host the app from the source code in <a className="text-yellow-500"href="https://github.com/ptnghia-j/ChordMiniApp" target="_blank" rel="noopener noreferrer">github</a> and deploy it on your own server.</em>
+                  <em className="text-sm">You can always clone/self-host the app from the source code in <a className="text-yellow-500"href="https://github.com/GeminiKING9999/ChordMiniApp" target="_blank" rel="noopener noreferrer">github</a> and deploy it on your own server.</em>
                 </p>
               </motion.div>
             </div>

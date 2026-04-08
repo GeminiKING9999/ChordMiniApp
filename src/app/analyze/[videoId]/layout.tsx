@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ videoId: 
   // Validate videoId format (YouTube video IDs are 11 characters)
   if (!videoId || typeof videoId !== 'string' || videoId.length !== 11) {
     return {
-      title: 'Invalid Video | ChordMini',
+      title: 'Invalid Video | Eclectify',
       description: 'The requested video ID is invalid. Please check the URL and try again.',
       robots: {
         index: false,
@@ -28,16 +28,16 @@ export async function generateMetadata({ params }: { params: Promise<{ videoId: 
 
     // Fallback metadata
     return {
-      title: `Music Analysis ${videoId} | ChordMini`,
-      description: `AI-powered chord recognition and beat detection analysis. Discover chord progressions, beats, and musical structure with ChordMini's advanced music analysis tools.`,
+      title: `Music Analysis ${videoId} | Eclectify`,
+      description: `AI-powered chord recognition and beat detection analysis. Discover chord progressions, beats, and musical structure with Eclectify's advanced music analysis tools.`,
       openGraph: {
-        title: `Music Analysis ${videoId} | ChordMini`,
-        description: `AI-powered chord recognition and beat detection analysis. Discover chord progressions, beats, and musical structure with ChordMini's advanced music analysis tools.`,
-        url: `https://chordmini.com/analyze/${videoId}`,
-        siteName: 'ChordMini',
+        title: `Music Analysis ${videoId} | Eclectify`,
+        description: `AI-powered chord recognition and beat detection analysis. Discover chord progressions, beats, and musical structure with Eclectify's advanced music analysis tools.`,
+        url: `https://eclecticemporium.store/analyze/${videoId}`,
+        siteName: 'Eclectify',
         images: [
           {
-            url: '/chordMiniLogo.webp',
+            url: '/eclectifyLogo.webp',
             width: 1200,
             height: 630,
             alt: `Music analysis for ${videoId}`,
@@ -47,9 +47,9 @@ export async function generateMetadata({ params }: { params: Promise<{ videoId: 
       },
       twitter: {
         card: 'summary_large_image',
-        title: `Music Analysis ${videoId} | ChordMini`,
+        title: `Music Analysis ${videoId} | Eclectify`,
         description: `AI-powered chord recognition and beat detection analysis. Discover chord progressions, beats, and musical structure.`,
-        images: ['/chordMiniLogo.webp'],
+        images: ['/eclectifyLogo.webp'],
       },
     };
   }

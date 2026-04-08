@@ -9,7 +9,7 @@ export async function GET(_request: NextRequest) {
   try {
     // For now, redirect to the static logo
     // In production, you would generate a dynamic image here using the above parameters
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://chordmini.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eclecticemporium.store';
     
     // You could implement dynamic OG image generation here using:
     // - @vercel/og
@@ -22,18 +22,18 @@ export async function GET(_request: NextRequest) {
     // - Artist name
     // - Key signature
     // - BPM
-    // - ChordMini branding
+    // - Eclectify branding
     // - Chord progression preview
     
     // For now, return the static logo
-    return NextResponse.redirect(`${baseUrl}/chordMiniLogo.webp`);
+    return NextResponse.redirect(`${baseUrl}/eclectifyLogo.webp`);
 
   } catch (error) {
     console.error('Failed to generate OG image:', error);
 
     // Fallback to static logo
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://chordmini.com';
-    return NextResponse.redirect(`${baseUrl}/chordMiniLogo.webp`);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eclecticemporium.store';
+    return NextResponse.redirect(`${baseUrl}/eclectifyLogo.webp`);
   }
 }
 

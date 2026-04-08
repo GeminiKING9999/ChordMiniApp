@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
       links: [
         { name: 'Help & Support', href: '/help', external: false },
         { name: 'Documentation', href: '/docs', external: false },
-        { name: 'GitHub Issues', href: 'https://github.com/ptnghia-j/ChordMiniApp/issues', external: true },
+        { name: 'GitHub Issues', href: 'https://github.com/GeminiKING9999/ChordMiniApp/issues', external: true },
       ]
     },
     legal: {
@@ -37,7 +37,7 @@ const Footer: React.FC = () => {
   const socialLinks = [
     {
       name: 'GitHub',
-      href: 'https://github.com/ptnghia-j/ChordMiniApp',
+      href: 'https://github.com/GeminiKING9999/ChordMiniApp',
       icon: <SiGithub className="w-5 h-5" />,
     },
     // {
@@ -62,8 +62,8 @@ const Footer: React.FC = () => {
                 <Link href="/">
                   {/* Light theme logo - hidden in dark mode */}
                   <Image
-                    src="/chordMiniLogo.webp"
-                    alt="ChordMini Logo"
+                    src="/eclectifyLogo.webp"
+                    alt="Eclectify Logo"
                     width={40}
                     height={40}
                     sizes="40px"
@@ -71,8 +71,8 @@ const Footer: React.FC = () => {
                   />
                   {/* Dark theme logo - hidden in light mode */}
                   <Image
-                    src="/chordMiniLogo-dark.webp"
-                    alt="ChordMini Logo"
+                    src="/eclectifyLogo-dark.webp"
+                    alt="Eclectify Logo"
                     width={40}
                     height={40}
                     sizes="40px"
@@ -81,10 +81,10 @@ const Footer: React.FC = () => {
                 </Link>
                 <div>
                   <h3 className="text-xl font-nunito font-extrabold text-gray-900 dark:text-white tracking-tight">
-                    ChordMini
+                    Eclectify
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    AI-Powered Chord Recognition
+                    AI-Powered Music Analysis
                   </p>
                 </div>
               </div>
@@ -97,7 +97,7 @@ const Footer: React.FC = () => {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                    className="text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-neon-purple transition-colors duration-200"
                     aria-label={social.name}
                   >
                     {social.icon}
@@ -120,7 +120,7 @@ const Footer: React.FC = () => {
                           href={link.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center space-x-1"
+                          className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-neon-purple transition-colors duration-200 flex items-center space-x-1"
                         >
                           <span>{link.name}</span>
                           <FaExternalLinkAlt className="w-3 h-3" />
@@ -128,7 +128,7 @@ const Footer: React.FC = () => {
                       ) : (
                         <Link
                           href={link.href}
-                          className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                          className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-neon-purple transition-colors duration-200"
                         >
                           {link.name}
                         </Link>
@@ -148,15 +148,15 @@ const Footer: React.FC = () => {
             {/* Left Side - Copyright and Contact */}
             <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                © {new Date().getFullYear()} ChordMini. All rights reserved.
+                © {new Date().getFullYear()} Eclectify. All rights reserved.
               </p>
               <div className="flex items-center space-x-2">
                 <HiMail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <a
-                  href="mailto:phantrongnghia510@gmail.com"
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                  href="mailto:contact@eclecticemporium.store"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-neon-purple transition-colors duration-200"
                 >
-                  phantrongnghia510@gmail.com
+                  contact@eclecticemporium.store
                 </a>
               </div>
             </div>

@@ -4,7 +4,7 @@ import { MetadataRoute } from 'next';
  * Generate dynamic robots.txt for ChordMini
  */
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://chordmini.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eclecticemporium.store';
   
   return {
     rules: [

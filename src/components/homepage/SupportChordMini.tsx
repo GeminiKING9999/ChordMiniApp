@@ -41,7 +41,7 @@ const SupportChordMini: React.FC = () => {
             <div id="support-actions-content" className="mt-4 space-y-3">
               <Button
                 as="a"
-                href="https://github.com/ptnghia-j/ChordMiniApp"
+                href="https://github.com/GeminiKING9999/ChordMiniApp"
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="light"
@@ -53,7 +53,7 @@ const SupportChordMini: React.FC = () => {
               </Button>
               <Button
                 as="a"
-                href="https://github.com/ptnghia-j/ChordMiniApp/issues"
+                href="https://github.com/GeminiKING9999/ChordMiniApp/issues"
                 target="_blank"
                 rel="noopener noreferrer"
                 variant="light"
@@ -65,7 +65,7 @@ const SupportChordMini: React.FC = () => {
               </Button>
               <Button
                 as="a"
-                href="mailto:phantrongnghia510@gmail.com"
+                href="mailto:contact@eclecticemporium.store"
                 variant="light"
                 size="sm"
                 startContent={<HiMail className="w-4 h-4" />}
@@ -91,12 +91,12 @@ const SupportChordMini: React.FC = () => {
       </AnimatedBorderText>
 
       {/* Research / Fact Component */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+      <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
         <div className="flex items-start gap-3">
-          <HiSparkles className="w-5 h-5 text-blue-600 dark:text-blue-300 mt-0.5 flex-shrink-0" />
-          <div className="text-xs text-blue-700 dark:text-blue-200">
-            <p className="font-medium text-blue-800 dark:text-blue-100 mb-1">Research Project</p>
-            <p>ChordMini is part of research at California State University, Fullerton. Your support helps advance music technology research.</p>
+          <HiSparkles className="w-5 h-5 text-purple-600 dark:text-purple-300 mt-0.5 flex-shrink-0" />
+          <div className="text-xs text-purple-700 dark:text-purple-200">
+            <p className="font-medium text-purple-800 dark:text-purple-100 mb-1">Open Source Project</p>
+            <p>Eclectify is an open-source AI-powered music analysis tool. Your support helps keep the servers running and enables new features.</p>
           </div>
         </div>
       </div>

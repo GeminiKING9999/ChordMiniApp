@@ -28,7 +28,7 @@ const PrivacyPage: React.FC = () => {
           </h2>
           <div className="space-y-4 text-gray-700 dark:text-gray-300">
             <p>
-              ChordMini is a research project developed at California State University, Fullerton.
+              Eclectify is a project developed by Eclectic Emporium.
               This Privacy Policy explains how we collect, use, and protect your information when you use our service.
             </p>
             <p>
@@ -97,7 +97,7 @@ const PrivacyPage: React.FC = () => {
                 <li>• All data transmission is encrypted using HTTPS</li>
                 <li>• Analysis results are cached using Firebase with security rules</li>
                 <li>• Audio files are processed temporarily and not permanently stored</li>
-                <li>• Access to data is restricted to authorized research personnel</li>
+                <li>• Access to data is restricted to authorized personnel</li>
               </ul>
             </div>
           </div>
@@ -109,7 +109,7 @@ const PrivacyPage: React.FC = () => {
             Third-Party Services
           </h2>
           <div className="space-y-4 text-gray-700 dark:text-gray-300">
-            <p>ChordMini integrates with the following third-party services:</p>
+            <p>Eclectify integrates with the following third-party services:</p>
             <ul className="space-y-3">
               <li>• <strong>YouTube API:</strong> For video metadata and audio extraction</li>
               <li>• <strong>Firebase:</strong> For caching and data storage</li>

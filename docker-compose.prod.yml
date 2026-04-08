@@ -34,7 +34,7 @@ services:
 
       # API Configuration (Public)
       - NEXT_PUBLIC_YOUTUBE_API_KEY=${NEXT_PUBLIC_YOUTUBE_API_KEY}
-      - NEXT_PUBLIC_PYTHON_API_URL=${NEXT_PUBLIC_PYTHON_API_URL:-http://backend:8080}
+      - PYTHON_API_URL=${PYTHON_API_URL:-http://backend:8080}
       - NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}
 
       # Feature Flags (Public)

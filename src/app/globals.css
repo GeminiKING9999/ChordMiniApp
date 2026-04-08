@@ -129,7 +129,7 @@
   body {
     font-family: inherit;
     line-height: var(--typography-body-line-height);
-    background-color: #faf6ee;
+    background-color: #f0f0f8;
     color: #111827;
   }
 
@@ -156,11 +156,11 @@
   }
 
   .dark .chord {
-    @apply text-blue-300;
+    @apply text-neon-cyan;
   }
 
   .dark .current-line {
-    @apply bg-blue-400 bg-opacity-20 border-blue-300;
+    @apply bg-neon-purple bg-opacity-20 border-neon-purple;
   }
 
   /* Navigation bar in dark mode */
@@ -174,15 +174,15 @@
   }
 
   .dark .model-selector {
-    @apply bg-content-bg text-gray-200 border-gray-700;
+    @apply bg-content-bg text-gray-200 border-[#2a2a5a];
   }
 
   .dark .chord-grid-cell {
-    @apply bg-content-bg border-gray-600 text-gray-200;
+    @apply bg-content-bg border-[#2a2a5a] text-gray-200;
   }
 
   .dark .chord-grid-cell-current {
-    @apply bg-blue-900 ring-blue-400 text-white;
+    @apply bg-purple-900 ring-neon-purple text-white;
   }
 
   /* Quarter rest symbol styles */

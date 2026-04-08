@@ -1,12 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 const { heroui } = require("@heroui/react");
 
-const LIGHT_WARM_BACKGROUND = "#FAF6EE";
-const LIGHT_WARM_SURFACE = "#FDFBF6";
-const LIGHT_WARM_SURFACE_SECONDARY = "#F5EFE4";
-const LIGHT_WARM_SURFACE_TERTIARY = "#EDE3D4";
-const LIGHT_WARM_SURFACE_QUATERNARY = "#E0D5C2";
-const LIGHT_WARM_DIVIDER = "#DCCFBA";
+// Eclectify Cyberpunk Theme - Neon Blue/Purple
+const LIGHT_WARM_BACKGROUND = "#F0F0F8";
+const LIGHT_WARM_SURFACE = "#F5F3FA";
+const LIGHT_WARM_SURFACE_SECONDARY = "#EBE8F5";
+const LIGHT_WARM_SURFACE_TERTIARY = "#DDD8EE";
+const LIGHT_WARM_SURFACE_QUATERNARY = "#CFC8E5";
+const LIGHT_WARM_DIVIDER = "#BEB5D9";
 
 module.exports = {
   darkMode: 'class',
@@ -60,9 +61,14 @@ module.exports = {
           900: "#212121",
           950: "#121212",
         },
-        // Custom dark background colors
-        'dark-bg': '#111720',
-        'content-bg': '#1E252E',
+        // Eclectify cyberpunk dark backgrounds
+        'dark-bg': '#0a0a1a',
+        'content-bg': '#12122a',
+        // Neon accent colors
+        'neon-blue': '#00d4ff',
+        'neon-purple': '#a855f7',
+        'neon-magenta': '#e040fb',
+        'neon-cyan': '#22d3ee',
       },
       fontFamily: {
         sans: ["var(--font-brand-sans)", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica", "Arial", "sans-serif"],
@@ -84,48 +90,48 @@ module.exports = {
     themes: {
       light: {
         colors: {
-          background: LIGHT_WARM_BACKGROUND, // Main light background
+          background: LIGHT_WARM_BACKGROUND,
           foreground: "#000000",
-          content1: LIGHT_WARM_SURFACE, // Content container background
-          content2: LIGHT_WARM_SURFACE_SECONDARY, // Secondary content background
-          content3: LIGHT_WARM_SURFACE_TERTIARY, // Tertiary content background
-          content4: LIGHT_WARM_SURFACE_QUATERNARY, // Quaternary content background
-          divider: LIGHT_WARM_DIVIDER, // Border color for light mode
+          content1: LIGHT_WARM_SURFACE,
+          content2: LIGHT_WARM_SURFACE_SECONDARY,
+          content3: LIGHT_WARM_SURFACE_TERTIARY,
+          content4: LIGHT_WARM_SURFACE_QUATERNARY,
+          divider: LIGHT_WARM_DIVIDER,
           primary: {
-            50: "#e3f2fd",
-            100: "#bbdefb",
-            200: "#90caf9",
-            300: "#64b5f6",
-            400: "#42a5f5",
-            500: "#2196f3",
-            600: "#1e88e5",
-            700: "#1976d2",
-            800: "#1565c0",
-            900: "#0d47a1",
-            DEFAULT: "#1e40af", // Blue accent color
+            50: "#eef2ff",
+            100: "#dbe4ff",
+            200: "#bac8ff",
+            300: "#91a7ff",
+            400: "#748ffc",
+            500: "#5c7cfa",
+            600: "#4c6ef5",
+            700: "#4263eb",
+            800: "#3b5bdb",
+            900: "#364fc7",
+            DEFAULT: "#6c3ce0",
             foreground: "#ffffff",
           },
           default: {
-            50: "#f8fafc",
-            100: "#f1f5f9",
-            200: "#e2e8f0",
-            300: "#cbd5e1",
-            400: "#94a3b8",
-            500: "#64748b",
-            600: "#475569",
-            700: "#334155",
-            800: "#1e293b",
-            900: "#0f172a",
-            DEFAULT: "#f1f5f9",
-            foreground: "#0f172a",
+            50: "#f8f9fc",
+            100: "#f1f3f9",
+            200: "#e2e5f0",
+            300: "#c8cde1",
+            400: "#9098b8",
+            500: "#636d8c",
+            600: "#475069",
+            700: "#333d55",
+            800: "#1e273b",
+            900: "#0d1225",
+            DEFAULT: "#f1f3f9",
+            foreground: "#0d1225",
           },
           secondary: {
-            50: "#f5f3ff",
-            100: "#ede9fe",
-            200: "#ddd6fe",
-            300: "#c4b5fd",
-            400: "#a78bfa",
-            500: "#8b5cf6",
+            50: "#f3f0ff",
+            100: "#e9e0ff",
+            200: "#d5c4fe",
+            300: "#bfa0fd",
+            400: "#a87bfb",
+            500: "#9061f9",
             600: "#7c3aed",
             700: "#6d28d9",
             800: "#5b21b6",
@@ -137,53 +143,53 @@ module.exports = {
       },
       dark: {
         colors: {
-          background: "#111720", // Main dark background
-          foreground: "#ffffff",
-          content1: "#1E252E", // Content container background
-          content2: "#2A3441", // Secondary content background
-          content3: "#374151", // Tertiary content background
-          content4: "#4B5563", // Quaternary content background
-          divider: "#374151", // Border color for dark mode
+          background: "#0a0a1a",   // Deep cyberpunk dark
+          foreground: "#e8e8ff",
+          content1: "#12122a",     // Content containers
+          content2: "#1a1a3e",     // Secondary content
+          content3: "#252550",     // Tertiary content
+          content4: "#303060",     // Quaternary content
+          divider: "#2a2a5a",      // Neon-tinted borders
           primary: {
-            50: "#1a365d",   // Dark navy bg for flat toast in dark mode
-            100: "#0d47a1",
-            200: "#1565c0",
-            300: "#1976d2",
-            400: "#1e88e5",
-            500: "#2196f3",
-            600: "#42a5f5",
-            700: "#64b5f6",
-            800: "#90caf9",
-            900: "#e3f2fd",
-            DEFAULT: "#1e40af", // Blue accent color
+            50: "#0d1033",
+            100: "#141866",
+            200: "#1e2899",
+            300: "#2838cc",
+            400: "#3d50ff",
+            500: "#6366f1",
+            600: "#818cf8",
+            700: "#a5b4fc",
+            800: "#c7d2fe",
+            900: "#e0e7ff",
+            DEFAULT: "#7c3aed",    // Neon purple accent
             foreground: "#ffffff",
           },
           default: {
-            50: "#f8fafc",
-            100: "#f1f5f9",
-            200: "#e2e8f0",
-            300: "#cbd5e1",
-            400: "#94a3b8",
-            500: "#64748b",
-            600: "#475569",
-            700: "#334155",
-            800: "#1e293b",
-            900: "#0f172a",
-            DEFAULT: "#374151",
-            foreground: "#ffffff",
+            50: "#f0f0ff",
+            100: "#e0e0ff",
+            200: "#c8c8ee",
+            300: "#a0a0cc",
+            400: "#7878aa",
+            500: "#505088",
+            600: "#383866",
+            700: "#282850",
+            800: "#1a1a3e",
+            900: "#0d0d25",
+            DEFAULT: "#252550",
+            foreground: "#e8e8ff",
           },
           secondary: {
-            50: "#2d1b69",   // Visible purple bg for flat toast in dark mode
-            100: "#3b2280",
-            200: "#4c2d99",
+            50: "#1a0833",
+            100: "#2d1066",
+            200: "#3d1899",
             300: "#5b21b6",
-            400: "#6d28d9",
-            500: "#7c3aed",
-            600: "#8b5cf6",
-            700: "#a78bfa",
-            800: "#c4b5fd",
+            400: "#7c3aed",
+            500: "#8b5cf6",
+            600: "#a78bfa",
+            700: "#c4b5fd",
+            800: "#ddd6fe",
             900: "#ede9fe",
-            DEFAULT: "#7c3aed",
+            DEFAULT: "#a855f7",    // Neon purple
             foreground: "#ffffff",
           },
         },

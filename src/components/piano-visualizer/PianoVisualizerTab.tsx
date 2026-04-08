@@ -627,7 +627,7 @@ export const PianoVisualizerTab: React.FC<PianoVisualizerTabProps> = ({
   const musicXmlOptions = useMemo(() => ({
     bpm: detectedBpm || undefined,
     timeSignature,
-    title: 'ChordMini Lead Sheet',
+    title: 'Eclectify Lead Sheet',
     keySignature: mergedKeySignature,
   }), [detectedBpm, mergedKeySignature, timeSignature]);
   const sheetMusicXml = useMemo(() => {

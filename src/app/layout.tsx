@@ -45,8 +45,8 @@ const varelaRound = Varela_Round({
 export const metadata: Metadata = {
   metadataBase: new URL(getFrontendBaseUrl()),
   title: {
-    default: 'ChordMini - Chord Recognition and Beat Tracking with LLM',
-    template: '%s | ChordMini'
+    default: 'Eclectify - AI-Powered Music Analysis',
+    template: '%s | Eclectify'
   },
   description: 'Advanced music analysis platform with AI-powered chord recognition, beat detection, and synchronized lyrics. Analyze YouTube videos and audio files to discover chord progressions, beats, and musical structure.',
   keywords: [
@@ -65,12 +65,12 @@ export const metadata: Metadata = {
   ],
   authors: [
     {
-      name: 'Nghia Phan',
-      url: 'https://github.com/ptnghia-j'
+      name: 'Eclectic Emporium',
+      url: 'https://eclecticemporium.store'
     }
   ],
-  creator: 'Nghia Phan',
-  publisher: 'California State University, Fullerton',
+  creator: 'Eclectic Emporium',
+  publisher: 'Eclectic Emporium',
   category: 'Music Technology',
   classification: 'Open Source Software',
   robots: {
@@ -87,55 +87,55 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
-      { url: '/chordMiniLogo.webp', sizes: '192x192', type: 'image/webp' },
-      { url: '/chordMiniLogo.webp', sizes: '512x512', type: 'image/webp' }
+      { url: '/eclectifyLogo.webp', sizes: '192x192', type: 'image/webp' },
+      { url: '/eclectifyLogo.webp', sizes: '512x512', type: 'image/webp' }
     ],
     shortcut: '/favicon.ico',
     apple: [
-      { url: '/chordMiniLogo.webp', sizes: '180x180', type: 'image/webp' }
+      { url: '/eclectifyLogo.webp', sizes: '180x180', type: 'image/webp' }
     ],
     other: [
       {
         rel: 'icon',
         type: 'image/webp',
         sizes: '32x32',
-        url: '/chordMiniLogo.webp',
+        url: '/eclectifyLogo.webp',
       },
       {
         rel: 'icon',
         type: 'image/webp',
         sizes: '16x16',
-        url: '/chordMiniLogo.webp',
+        url: '/eclectifyLogo.webp',
       }
     ]
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://chordmini.me',
-    siteName: 'ChordMini',
-    title: 'ChordMini - Chord Recognition and Beat Tracking with LLM',
+    url: 'https://eclecticemporium.store',
+    siteName: 'Eclectify',
+    title: 'Eclectify - AI-Powered Music Analysis',
     description: 'Advanced music analysis platform with AI-powered chord recognition, beat detection, and synchronized lyrics.',
     images: [
       {
-        url: '/chordMiniLogo.webp',
+        url: '/eclectifyLogo.webp',
         width: 1200,
         height: 630,
-        alt: 'ChordMini - Music Analysis Platform',
+        alt: 'Eclectify - AI Music Analysis Platform',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChordMini - Chord Recognition and Beat Tracking with LLM',
+    title: 'Eclectify - AI-Powered Music Analysis',
     description: 'Advanced music analysis platform with AI-powered chord recognition, beat detection, and synchronized lyrics.',
-    images: ['/chordMiniLogo.webp'],
+    images: ['/eclectifyLogo.webp'],
   },
   verification: {
     google: 'google-site-verification-code', // To be replaced with actual verification code
   },
   alternates: {
-    canonical: 'https://chordmini.me',
+    canonical: 'https://eclecticemporium.store',
   },
 };
 
@@ -191,9 +191,9 @@ export default function RootLayout({
 
         {/* Favicon configuration for better browser compatibility */}
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
-        <link rel="icon" href="/chordMiniLogo.webp" type="image/webp" sizes="32x32" />
-        <link rel="icon" href="/chordMiniLogo.webp" type="image/webp" sizes="16x16" />
-        <link rel="apple-touch-icon" href="/chordMiniLogo.webp" sizes="180x180" />
+        <link rel="icon" href="/eclectifyLogo.webp" type="image/webp" sizes="32x32" />
+        <link rel="icon" href="/eclectifyLogo.webp" type="image/webp" sizes="16x16" />
+        <link rel="apple-touch-icon" href="/eclectifyLogo.webp" sizes="180x180" />
         <link rel="manifest" href="/site.webmanifest" />
 
         {/* Removed global image preloads: let Next/Image with priority handle above-the-fold assets on the pages that use them to avoid preload-not-used warnings. */}
