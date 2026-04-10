@@ -9,7 +9,7 @@ type ActiveTab = 'beatChordMap' | 'guitarChords' | 'pianoVisualizer' | 'lyricsCh
  */
 export const useTabsAndEditing = (initialVideoTitle: string = '') => {
   // Tab state
-  const [activeTab, setActiveTab] = useState<ActiveTab>('beatChordMap');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('guitarChords');
   
   // Editing state
   const [isEditMode, setIsEditMode] = useState(false);

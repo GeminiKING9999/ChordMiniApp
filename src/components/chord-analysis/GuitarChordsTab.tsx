@@ -651,19 +651,21 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
                         key={`guitar-chord-${chordInfo.startIndex}`}
                         initial={false}
                         animate={{
-                          opacity: chordInfo.isCurrent ? 1 : 0.6,
-                          scale: 1,
-                          filter: `blur(${chordInfo.isCurrent ? 0 : 1}px)`,
+                          opacity: chordInfo.isCurrent ? 1 : 0.5,
+                          scale: chordInfo.isCurrent ? 1.08 : 0.95,
                           zIndex: chordInfo.isCurrent ? 10 : 1
                         }}
-                        exit={{ opacity: 0.6 }}
+                        exit={{ opacity: 0.5 }}
                         transition={itemTransition}
-                        className="flex-shrink-0 relative rounded-lg will-change-transform"
+                        className={`flex-shrink-0 relative rounded-lg will-change-transform ${
+                          chordInfo.isCurrent
+                            ? 'ring-2 ring-blue-500 dark:ring-blue-400 shadow-lg shadow-blue-500/25 dark:shadow-blue-400/20 bg-white/5 dark:bg-white/5'
+                            : ''
+                        }`}
                         style={{
                           width: `${diagramConfig.cellWidth}px`,
                           margin: `0 ${diagramConfig.marginX}px`,
-                        }}
-                      >
+                        }}>
                         <GuitarChordDiagram
                           chordData={chordDataCache.get(chordInfo.chord) || null}
                           positionIndex={chordPositions[chordInfo.chord] || 0}

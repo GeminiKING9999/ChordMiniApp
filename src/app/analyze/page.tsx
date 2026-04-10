@@ -402,7 +402,7 @@ export default function LocalAudioAnalyzePage() {
   const [isFollowModeEnabled, setIsFollowModeEnabled] = useState(true);
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<TabKey>('beatChordMap');
+  const [activeTab, setActiveTab] = useState<TabKey>('guitarChords');
   const sheetSageResult = useAnalysisStore((state) => state.sheetSageResult);
   const isComputingSheetSage = useAnalysisStore((state) => state.isComputingSheetSage);
   const sheetSageError = useAnalysisStore((state) => state.sheetSageError);
