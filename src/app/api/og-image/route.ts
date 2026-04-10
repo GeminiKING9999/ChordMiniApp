@@ -22,18 +22,18 @@ export async function GET(_request: NextRequest) {
     // - Artist name
     // - Key signature
     // - BPM
-    // - Eclectify branding
+    // - Chord Reaper branding
     // - Chord progression preview
     
     // For now, return the static logo
-    return NextResponse.redirect(`${baseUrl}/eclectifyLogo.webp`);
+    return NextResponse.redirect(`${baseUrl}/chord-reaper-mark.webp`);
 
   } catch (error) {
     console.error('Failed to generate OG image:', error);
 
     // Fallback to static logo
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eclecticemporium.store';
-    return NextResponse.redirect(`${baseUrl}/eclectifyLogo.webp`);
+    return NextResponse.redirect(`${baseUrl}/chord-reaper-mark.webp`);
   }
 }
 

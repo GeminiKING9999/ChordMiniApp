@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 const { heroui } = require("@heroui/react");
 
-// Eclectify Cyberpunk Theme - Neon Blue/Purple
+// Chord Reaper Cyberpunk Theme - Neon Blue/Purple
 const LIGHT_WARM_BACKGROUND = "#F0F0F8";
 const LIGHT_WARM_SURFACE = "#F5F3FA";
 const LIGHT_WARM_SURFACE_SECONDARY = "#EBE8F5";
@@ -61,7 +61,7 @@ module.exports = {
           900: "#212121",
           950: "#121212",
         },
-        // Eclectify cyberpunk dark backgrounds
+        // Chord Reaper cyberpunk dark backgrounds
         'dark-bg': '#0a0a1a',
         'content-bg': '#12122a',
         // Neon accent colors

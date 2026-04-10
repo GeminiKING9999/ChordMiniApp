@@ -15,7 +15,7 @@ import { IoMusicalNotes, IoMusicalNote } from 'react-icons/io5';
 import { useSearchBoxVisibility } from '@/hooks/ui/useSearchBoxVisibility';
 import { useSharedSearchState } from '@/hooks/search/useSharedSearchState';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Chip } from '@heroui/react';
+
 import { HiSparkles } from 'react-icons/hi2';
 // import { WarningBanner } from '@/components/WarningBanner';
 import SupportChordMini from '@/components/homepage/SupportChordMini'
@@ -156,7 +156,7 @@ function NewHomePageContentInner() {
           <div className="lg:col-span-3 space-y-8">
             {/* Title - Centered */}
             <div ref={titleRef} className="text-center">
-              <AnimatedTitle text="Chord Mini" className="mb-3" />
+              <AnimatedTitle text="Chord Reaper" className="mb-3" />
               <div className="min-h-[2rem] flex items-center justify-center mt-2">
                 <motion.p
                   initial={{ opacity: 0 }}
@@ -168,7 +168,7 @@ function NewHomePageContentInner() {
                   }}
                   className="text-base md:text-lg text-slate-600 dark:text-gray-400 font-normal tracking-wide text-center leading-relaxed max-w-lg mx-auto"
                 >
-                  Open source chord & beat detection application. Get your favorite songs transcribed!
+                  AI-powered chord &amp; beat detection application. Get your favorite songs transcribed!
                 </motion.p>
               </div>
             </div>
@@ -296,17 +296,11 @@ function NewHomePageContentInner() {
               >
                 <h3 className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
                   <HiSparkles className="w-5 h-5 text-primary" />
-                  Support Eclectify
+                  Support Eclectic Emporium&apos;s Chord Reaper
                 </h3>
-                <Chip size="sm" variant="flat" color="success">
-                  Open Source
-                </Chip>
 
                 <p className="text-md text-gray-700 dark:text-gray-200 leading-relaxed">
-                  Eclectify is a free, open-source project. The backend server is not guaranteed to be maintained and running for extended periods due to budget constraints. We try our best to keep it running and add new features/models. If you&apos;d like to support the project to keep the backend server running, you can use the donation link. We really appreciate your support! <br />
-                  <em className="text-sm">Note: current server is CPU-based computation, GPU acceleration is more than 10 times faster.</em>
-                  <br />
-                  <em className="text-sm">You can always clone/self-host the app from the source code in <a className="text-yellow-500"href="https://github.com/GeminiKING9999/ChordMiniApp" target="_blank" rel="noopener noreferrer">github</a> and deploy it on your own server.</em>
+                  We continuously work to improve Chord Reaper with new features and models. If you&apos;d like to support development and help keep the servers running, you can use the donation link. We really appreciate your support!
                 </p>
               </motion.div>
             </div>

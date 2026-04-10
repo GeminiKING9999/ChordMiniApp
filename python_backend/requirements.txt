@@ -36,7 +36,7 @@ pydub==0.25.1
 # ============================================================================
 # ML Frameworks - GPU Acceleration Support, for macos use tensorflow-macos
 # ============================================================================
-# TensorFlow for production deployment (Updated version)
+# TensorFlow for production deployment (CPU on Windows; no native Windows GPU support for CUDA 12.x)
 tensorflow==2.15.1
 # tensorflow-macos==2.13.1
 protobuf==3.20.3

@@ -335,15 +335,14 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
     hasUserAdjustedCapoRef.current = false;
   }, [capoSuggestionSignature]);
 
-  useEffect(() => {
-    if (!suggestedCapo || hasUserAdjustedCapoRef.current) {
-      return;
-    }
+  // Capo suggestion is displayed as a clickable badge — not auto-applied
+  const hasPendingSuggestion = suggestedCapo && suggestedCapo.capoFret !== capoFret && !hasUserAdjustedCapoRef.current;
 
-    if (capoFret !== suggestedCapo.capoFret) {
-      useUIStore.getState().setGuitarCapoFret(suggestedCapo.capoFret);
+  const applySuggestedCapo = useCallback(() => {
+    if (suggestedCapo) {
+      setCapoFret(suggestedCapo.capoFret);
     }
-  }, [suggestedCapo, capoFret]);
+  }, [suggestedCapo, setCapoFret]);
 
 
   // Unique chords for guitar diagrams (always applies corrections for consistent display)
@@ -565,6 +564,19 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
                 </div>
               </div>
 
+              {/* Capo suggestion badge */}
+              {hasPendingSuggestion && (
+                <AppTooltip content={`Suggested capo fret ${suggestedCapo!.capoFret} for easier chord shapes`}>
+                  <button
+                    onClick={applySuggestedCapo}
+                    className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 hover:bg-amber-200 dark:hover:bg-amber-800/50 transition-colors animate-pulse"
+                  >
+                    <span>💡</span>
+                    <span>Capo {suggestedCapo!.capoFret}?</span>
+                  </button>
+                </AppTooltip>
+              )}
+
               <AnimatePresence>
                 {isCapoPreviewOpen && (
                   <>
@@ -604,7 +616,7 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
           </div>
         </div>
         <ScrollableTabContainer heightClass="h-[8.5rem] sm:h-32 md:h-40 lg:h-48">
-          <ChordGridContainer {...{ analysisResults, chordGridData, keySignature, isDetectingKey, isChatbotOpen, isLyricsPanelOpen, isUploadPage, showCorrectedChords, chordCorrections, sequenceCorrections, segmentationData }} />
+          <ChordGridContainer {...{ analysisResults, chordGridData, keySignature, isDetectingKey, isChatbotOpen, isLyricsPanelOpen, isUploadPage, showCorrectedChords, chordCorrections, sequenceCorrections, segmentationData, capoFret, capoTargetKey }} />
         </ScrollableTabContainer>
       </div>
 

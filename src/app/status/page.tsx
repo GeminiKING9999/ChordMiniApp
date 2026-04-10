@@ -72,7 +72,7 @@ export default function StatusPage() {
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-3">
               <FiActivity className="w-8 h-8" />
-              <h1 className="text-3xl font-bold">Eclectify API Status</h1>
+              <h1 className="text-3xl font-bold">Chord Reaper API Status</h1>
             </div>
             <p className="text-lg opacity-90 mb-3">
               Backend service monitoring (checked on page load)

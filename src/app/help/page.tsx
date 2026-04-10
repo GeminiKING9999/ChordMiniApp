@@ -10,15 +10,15 @@ const HelpPage: React.FC = () => {
   const faqs = [
     {
       question: "How do I analyze a song?",
-      answer: "Simply paste a YouTube URL into the search box on the home page, or use the 'Analyze Audio' page to upload an audio file directly. Eclectify will automatically detect beats, chords, and synchronize lyrics."
+      answer: "Simply paste a YouTube URL into the search box on the home page, or use the 'Analyze Audio' page to upload an audio file directly. Chord Reaper will automatically detect beats, chords, and synchronize lyrics."
     },
     {
       question: "What audio formats are supported?",
-      answer: "Eclectify supports common audio formats including MP3, WAV, M4A, and FLAC. For YouTube videos, audio is automatically extracted from the video."
+      answer: "Chord Reaper supports common audio formats including MP3, WAV, M4A, and FLAC. For YouTube videos, audio is automatically extracted from the video."
     },
     {
       question: "How accurate is the chord recognition?",
-      answer: "Eclectify uses state-of-the-art machine learning models including Chord-CNN-LSTM and BTC models, achieving high accuracy on most popular music genres. Accuracy may vary depending on audio quality and musical complexity."
+      answer: "Chord Reaper uses state-of-the-art machine learning models including Chord-CNN-LSTM and BTC models, achieving high accuracy on most popular music genres. Accuracy may vary depending on audio quality and musical complexity."
     },
     {
       question: "Can I export the results?",
@@ -26,7 +26,7 @@ const HelpPage: React.FC = () => {
     },
     {
       question: "Is my data stored or shared?",
-      answer: "Eclectify processes audio locally and uses Firebase for caching analysis results to improve performance. No personal data is shared with third parties. See our Privacy Policy for details."
+      answer: "Chord Reaper processes audio locally and uses Firebase for caching analysis results to improve performance. No personal data is shared with third parties. See our Privacy Policy for details."
     },
     {
       question: "Why is processing taking a long time?",
@@ -49,7 +49,7 @@ const HelpPage: React.FC = () => {
             Help & Support
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Get help using Eclectify and find answers to common questions.
+            Get help using Chord Reaper and find answers to common questions.
           </p>
         </div>
 
@@ -81,7 +81,7 @@ const HelpPage: React.FC = () => {
                   Wait for Analysis
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Eclectify will extract audio, detect beats and chords, and fetch synchronized lyrics.
+                  Chord Reaper will extract audio, detect beats and chords, and fetch synchronized lyrics.
                 </p>
               </div>
             </div>

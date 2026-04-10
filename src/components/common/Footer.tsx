@@ -62,8 +62,8 @@ const Footer: React.FC = () => {
                 <Link href="/">
                   {/* Light theme logo - hidden in dark mode */}
                   <Image
-                    src="/eclectifyLogo.webp"
-                    alt="Eclectify Logo"
+                    src="/chord-reaper-mark.webp"
+                    alt="Chord Reaper Logo"
                     width={40}
                     height={40}
                     sizes="40px"
@@ -71,8 +71,8 @@ const Footer: React.FC = () => {
                   />
                   {/* Dark theme logo - hidden in light mode */}
                   <Image
-                    src="/eclectifyLogo-dark.webp"
-                    alt="Eclectify Logo"
+                    src="/chord-reaper-mark-dark.webp"
+                    alt="Chord Reaper Logo"
                     width={40}
                     height={40}
                     sizes="40px"
@@ -81,7 +81,7 @@ const Footer: React.FC = () => {
                 </Link>
                 <div>
                   <h3 className="text-xl font-nunito font-extrabold text-gray-900 dark:text-white tracking-tight">
-                    Eclectify
+                    Chord Reaper
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     AI-Powered Music Analysis
@@ -148,7 +148,7 @@ const Footer: React.FC = () => {
             {/* Left Side - Copyright and Contact */}
             <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                © {new Date().getFullYear()} Eclectify. All rights reserved.
+                © {new Date().getFullYear()} Eclectic Emporium. All rights reserved.
               </p>
               <div className="flex items-center space-x-2">
                 <HiMail className="w-4 h-4 text-gray-500 dark:text-gray-400" />

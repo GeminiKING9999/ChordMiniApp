@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Main purple gradient - slightly deeper for light bg contrast -->
+    <linearGradient id="bladeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="50%" stop-color="#6d28d9"/>
+      <stop offset="100%" stop-color="#5b21b6"/>
+    </linearGradient>
+    <!-- Blue accent gradient - deeper for light bg -->
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0891b2"/>
+      <stop offset="100%" stop-color="#0e7490"/>
+    </linearGradient>
+    <!-- Soft shadow for light theme -->
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="2" dy="3" stdDeviation="5" flood-color="#4c1d95" flood-opacity="0.2"/>
+    </filter>
+    <filter id="waveShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="1" dy="2" stdDeviation="3" flood-color="#0891b2" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle - warm light -->
+  <circle cx="256" cy="256" r="240" fill="#F0F0F8"/>
+  <circle cx="256" cy="256" r="238" fill="none" stroke="#DDD8EE" stroke-width="2"/>
+  
+  <!-- Scythe blade -->
+  <g filter="url(#softShadow)">
+    <path d="M 340 100 
+             C 420 120, 460 200, 440 300 
+             C 420 380, 360 420, 280 430 
+             C 300 400, 340 360, 360 300 
+             C 380 240, 370 180, 340 140 
+             Z" 
+          fill="url(#bladeGrad)" opacity="0.95"/>
+    
+    <!-- Blade edge highlight -->
+    <path d="M 340 100 
+             C 420 120, 460 200, 440 300 
+             C 420 380, 360 420, 280 430"
+          fill="none" stroke="#a78bfa" stroke-width="2.5" opacity="0.6"/>
+  </g>
+  
+  <!-- Scythe handle/staff -->
+  <g filter="url(#softShadow)">
+    <line x1="310" y1="130" x2="140" y2="400" stroke="url(#bladeGrad)" stroke-width="14" stroke-linecap="round"/>
+    <line x1="310" y1="130" x2="140" y2="400" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  </g>
+  
+  <!-- Sound waveform bars -->
+  <g filter="url(#waveShadow)" opacity="0.95">
+    <rect x="195" y="210" width="8" height="40" rx="4" fill="url(#glowGrad)" transform="rotate(-10, 199, 230)"/>
+    <rect x="215" y="190" width="8" height="70" rx="4" fill="url(#glowGrad)" transform="rotate(-8, 219, 225)"/>
+    <rect x="235" y="175" width="8" height="100" rx="4" fill="url(#glowGrad)" transform="rotate(-5, 239, 225)"/>
+    <rect x="255" y="170" width="8" height="110" rx="4" fill="url(#glowGrad)" transform="rotate(-2, 259, 225)"/>
+    <rect x="275" y="180" width="8" height="90" rx="4" fill="url(#glowGrad)" transform="rotate(0, 279, 225)"/>
+    <rect x="295" y="195" width="8" height="60" rx="4" fill="url(#glowGrad)" transform="rotate(3, 299, 225)"/>
+    <rect x="315" y="210" width="8" height="35" rx="4" fill="url(#glowGrad)" transform="rotate(5, 319, 228)"/>
+  </g>
+  
+  <!-- Musical note accent -->
+  <g filter="url(#waveShadow)">
+    <path d="M 160 310 
+             C 150 280, 170 260, 190 270 
+             C 210 280, 200 310, 180 320 
+             C 165 328, 155 340, 160 355
+             L 158 370"
+          fill="none" stroke="url(#glowGrad)" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+    <ellipse cx="155" cy="372" rx="12" ry="9" fill="url(#glowGrad)" opacity="0.85" transform="rotate(-20, 155, 372)"/>
+  </g>
+  
+  <!-- Subtle ring accents -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="#6d28d9" stroke-width="1" opacity="0.12"/>
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#0891b2" stroke-width="0.5" opacity="0.1"/>
+</svg>

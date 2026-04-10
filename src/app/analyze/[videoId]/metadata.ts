@@ -98,12 +98,12 @@ export async function generateAnalyzeMetadata(videoId: string): Promise<Metadata
   
   // Generate title and description
   const title = videoInfo?.title 
-    ? `${videoInfo.title} - Chord Analysis | Eclectify`
-    : `Music Analysis ${videoId} | Eclectify`;
+    ? `${videoInfo.title} - Chord Analysis | Chord Reaper`
+    : `Music Analysis ${videoId} | Chord Reaper`;
     
   const description = videoInfo?.title
-    ? `AI-powered chord recognition and beat detection analysis of "${videoInfo.title}". Discover chord progressions, beats, and musical structure with Eclectify's advanced music analysis tools.`
-    : `AI-powered music analysis for video ${videoId}. Discover chord progressions, beats, and musical structure with Eclectify's advanced analysis tools.`;
+    ? `AI-powered chord recognition and beat detection analysis of "${videoInfo.title}". Discover chord progressions, beats, and musical structure with Chord Reaper's advanced music analysis tools.`
+    : `AI-powered music analysis for video ${videoId}. Discover chord progressions, beats, and musical structure with Chord Reaper's advanced analysis tools.`;
 
   // Generate keywords
   const keywords = [
@@ -135,7 +135,7 @@ export async function generateAnalyzeMetadata(videoId: string): Promise<Metadata
       title,
       description,
       url: pageUrl,
-      siteName: 'Eclectify',
+      siteName: 'Chord Reaper',
       images: [
         {
           url: ogImageUrl,

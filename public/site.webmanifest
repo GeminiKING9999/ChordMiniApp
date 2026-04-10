@@ -1,6 +1,6 @@
 {
-  "name": "Eclectify - AI-Powered Music Analysis",
-  "short_name": "Eclectify",
+  "name": "Chord Reaper - AI-Powered Music Analysis",
+  "short_name": "Chord Reaper",
   "description": "Advanced music analysis platform with AI-powered chord recognition, beat detection, and synchronized lyrics",
   "start_url": "/",
   "display": "standalone",
@@ -12,13 +12,13 @@
   "categories": ["music", "entertainment", "productivity"],
   "icons": [
     {
-      "src": "/eclectifyLogo.webp",
+      "src": "/chord-reaper-mark.webp",
       "sizes": "192x192",
       "type": "image/webp",
       "purpose": "any maskable"
     },
     {
-      "src": "/eclectifyLogo.webp",
+      "src": "/chord-reaper-mark.webp",
       "sizes": "512x512",
       "type": "image/webp",
       "purpose": "any maskable"
@@ -37,7 +37,7 @@
       "url": "/analyze",
       "icons": [
         {
-          "src": "/eclectifyLogo.webp",
+          "src": "/chord-reaper-mark.webp",
           "sizes": "192x192"
         }
       ]

@@ -131,8 +131,8 @@ const Navigation: React.FC<NavigationProps> = ({ className = '', showStickySearc
           <Link href="/" className="flex items-center group">
             {/* Light theme logo - hidden in dark mode */}
             <Image
-              src="/eclectifyLogo.webp"
-              alt="Eclectify Logo"
+              src="/chord-reaper-mark.webp"
+              alt="Chord Reaper Logo"
               width={40}
               height={40}
               sizes="40px"
@@ -141,8 +141,8 @@ const Navigation: React.FC<NavigationProps> = ({ className = '', showStickySearc
             />
             {/* Dark theme logo - hidden in light mode */}
             <Image
-              src="/eclectifyLogo-dark.webp"
-              alt="Eclectify Logo"
+              src="/chord-reaper-mark-dark.webp"
+              alt="Chord Reaper Logo"
               width={40}
               height={40}
               sizes="40px"
@@ -150,7 +150,7 @@ const Navigation: React.FC<NavigationProps> = ({ className = '', showStickySearc
               style={{ width: '40px', height: '40px' }}
             />
             <h1 className="text-xl font-nunito font-extrabold text-foreground transition-colors duration-300 group-hover:text-purple-600 dark:group-hover:text-neon-purple tracking-tight">
-              Eclectify
+              Chord Reaper
             </h1>
           </Link>
         </NavbarBrand>

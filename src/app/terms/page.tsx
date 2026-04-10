@@ -28,11 +28,11 @@ const TermsPage: React.FC = () => {
           </h2>
           <div className="space-y-4 text-gray-700 dark:text-gray-300">
             <p>
-              Welcome to Eclectify, a project developed by Eclectic Emporium.
+              Welcome to Chord Reaper, a project developed by Eclectic Emporium.
               These Terms of Service govern your use of our AI-powered chord recognition platform.
             </p>
             <p>
-              By using Eclectify, you agree to these terms. Please read them carefully.
+              By using Chord Reaper, you agree to these terms. Please read them carefully.
             </p>
           </div>
         </div>
@@ -48,7 +48,7 @@ const TermsPage: React.FC = () => {
                 Important Notice
               </h3>
               <p>
-                Eclectify is provided as a tool for educational and academic purposes.
+                Chord Reaper is provided as a tool for educational and academic purposes.
                 It is not intended for commercial use or production environments.
               </p>
             </div>
@@ -72,7 +72,7 @@ const TermsPage: React.FC = () => {
                 You May:
               </h3>
               <ul className="space-y-2 text-gray-700 dark:text-gray-300">
-                <li>• Use Eclectify for personal music analysis and learning</li>
+                <li>• Use Chord Reaper for personal music analysis and learning</li>
                 <li>• Analyze publicly available YouTube videos</li>
                 <li>• Upload your own audio files for analysis</li>
                 <li>• Share results for educational or research purposes</li>
@@ -100,7 +100,7 @@ const TermsPage: React.FC = () => {
           </h2>
           <div className="space-y-4 text-gray-700 dark:text-gray-300">
             <ul className="space-y-3">
-              <li>• Eclectify&apos;s source code and algorithms are owned by the development team</li>
+              <li>• Chord Reaper&apos;s source code and algorithms are owned by the development team</li>
               <li>• You retain ownership of any audio content you upload</li>
               <li>• Analysis results (chord progressions, beat data) are provided for your use</li>
               <li>• Third-party content (YouTube videos, lyrics) remains owned by original creators</li>
@@ -120,7 +120,7 @@ const TermsPage: React.FC = () => {
                 Service Availability
               </h3>
               <p>
-                Eclectify is provided &quot;as is&quot; without warranties. As a project,
+                Chord Reaper is provided &quot;as is&quot; without warranties. As a project,
                 service availability and accuracy are not guaranteed.
               </p>
             </div>
@@ -140,7 +140,7 @@ const TermsPage: React.FC = () => {
           </h2>
           <div className="space-y-4 text-gray-700 dark:text-gray-300">
             <p>
-              By using Eclectify, you acknowledge that:
+              By using Chord Reaper, you acknowledge that:
             </p>
             <ul className="space-y-2">
               <li>• Your usage data may be collected to improve the service</li>
@@ -162,7 +162,7 @@ const TermsPage: React.FC = () => {
               Significant changes will be communicated through the platform.
             </p>
             <p>
-              Continued use of Eclectify after changes constitutes acceptance of the updated terms.
+              Continued use of Chord Reaper after changes constitutes acceptance of the updated terms.
             </p>
           </div>
         </div>

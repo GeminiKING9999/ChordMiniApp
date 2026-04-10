@@ -28,7 +28,7 @@ const PrivacyPage: React.FC = () => {
           </h2>
           <div className="space-y-4 text-gray-700 dark:text-gray-300">
             <p>
-              Eclectify is a project developed by Eclectic Emporium.
+              Chord Reaper is a project developed by Eclectic Emporium.
               This Privacy Policy explains how we collect, use, and protect your information when you use our service.
             </p>
             <p>
@@ -109,7 +109,7 @@ const PrivacyPage: React.FC = () => {
             Third-Party Services
           </h2>
           <div className="space-y-4 text-gray-700 dark:text-gray-300">
-            <p>Eclectify integrates with the following third-party services:</p>
+            <p>Chord Reaper integrates with the following third-party services:</p>
             <ul className="space-y-3">
               <li>• <strong>YouTube API:</strong> For video metadata and audio extraction</li>
               <li>• <strong>Firebase:</strong> For caching and data storage</li>

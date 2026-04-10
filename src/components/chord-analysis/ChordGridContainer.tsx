@@ -8,6 +8,8 @@ import { useRomanNumerals, useShowSegmentation, useIsPitchShiftEnabled, useTarge
 import { useResolvedChordDisplayData } from '@/hooks/chord-analysis/useResolvedChordDisplayData';
 import { AnalysisResult } from '@/services/chord-analysis/chordRecognitionService';
 import { SegmentationResult } from '@/types/chatbotTypes';
+import { transposeChord } from '@/utils/chordTransposition';
+import { chordMappingService } from '@/services/chord-analysis/chordMappingService';
 
 interface AudioMappingItem {
   chord: string;
@@ -65,6 +67,9 @@ interface ChordGridContainerProps {
   isEditMode?: boolean;
   editedChords?: Record<number, string>;
   onChordEdit?: (index: number, newChord: string) => void;
+  // Capo props
+  capoFret?: number;
+  capoTargetKey?: string;
 }
 
 export const ChordGridContainer: React.FC<ChordGridContainerProps> = React.memo(({
@@ -83,6 +88,8 @@ export const ChordGridContainer: React.FC<ChordGridContainerProps> = React.memo(
   isEditMode = false,
   editedChords = {},
   onChordEdit,
+  capoFret = 0,
+  capoTargetKey,
 }) => {
   // PERFORMANCE OPTIMIZATION: Memoize stable props to prevent unnecessary re-renders
   // Only recalculate when the actual data changes, not on every render
@@ -137,8 +144,16 @@ export const ChordGridContainer: React.FC<ChordGridContainerProps> = React.memo(
       displayKey = quality ? `${targetKey} ${quality}` : targetKey;
     }
 
+    const transformedChords = effectiveChordGridData.chords.map(chord => {
+      if (!chord || chord === 'N.C.' || chord === 'N' || chord === 'N/C' || chord === 'NC') return chord;
+      if (capoFret === 0) return chord;
+      
+      const rawShape = transposeChord(chord, -capoFret, capoTargetKey || displayKey || 'C');
+      return chordMappingService.getPreferredDiagramChordName(rawShape);
+    });
+
     return {
-      chords: effectiveChordGridData.chords,
+      chords: transformedChords,
       beats: effectiveChordGridData.beats,
       // CRITICAL FIX: Pass original chords for Roman numeral mapping
       // Roman numerals should be based on original key, not transposed chords
@@ -186,6 +201,8 @@ export const ChordGridContainer: React.FC<ChordGridContainerProps> = React.memo(
     effectiveShowCorrectedChords,
     effectiveChordCorrections,
     effectiveSequenceCorrections,
+    capoFret,
+    capoTargetKey,
   ]);
 
   // Get click handler from Zustand store

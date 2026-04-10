@@ -45,8 +45,8 @@ const varelaRound = Varela_Round({
 export const metadata: Metadata = {
   metadataBase: new URL(getFrontendBaseUrl()),
   title: {
-    default: 'Eclectify - AI-Powered Music Analysis',
-    template: '%s | Eclectify'
+    default: 'Chord Reaper - AI-Powered Music Analysis',
+    template: '%s | Chord Reaper'
   },
   description: 'Advanced music analysis platform with AI-powered chord recognition, beat detection, and synchronized lyrics. Analyze YouTube videos and audio files to discover chord progressions, beats, and musical structure.',
   keywords: [
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
   creator: 'Eclectic Emporium',
   publisher: 'Eclectic Emporium',
   category: 'Music Technology',
-  classification: 'Open Source Software',
+  classification: 'Music Technology',
   robots: {
     index: true,
     follow: true,
@@ -87,25 +87,25 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
-      { url: '/eclectifyLogo.webp', sizes: '192x192', type: 'image/webp' },
-      { url: '/eclectifyLogo.webp', sizes: '512x512', type: 'image/webp' }
+      { url: '/chord-reaper-mark.webp', sizes: '192x192', type: 'image/webp' },
+      { url: '/chord-reaper-mark.webp', sizes: '512x512', type: 'image/webp' }
     ],
     shortcut: '/favicon.ico',
     apple: [
-      { url: '/eclectifyLogo.webp', sizes: '180x180', type: 'image/webp' }
+      { url: '/chord-reaper-mark.webp', sizes: '180x180', type: 'image/webp' }
     ],
     other: [
       {
         rel: 'icon',
         type: 'image/webp',
         sizes: '32x32',
-        url: '/eclectifyLogo.webp',
+        url: '/chord-reaper-mark.webp',
       },
       {
         rel: 'icon',
         type: 'image/webp',
         sizes: '16x16',
-        url: '/eclectifyLogo.webp',
+        url: '/chord-reaper-mark.webp',
       }
     ]
   },
@@ -113,23 +113,23 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://eclecticemporium.store',
-    siteName: 'Eclectify',
-    title: 'Eclectify - AI-Powered Music Analysis',
+    siteName: 'Chord Reaper',
+    title: 'Chord Reaper - AI-Powered Music Analysis',
     description: 'Advanced music analysis platform with AI-powered chord recognition, beat detection, and synchronized lyrics.',
     images: [
       {
-        url: '/eclectifyLogo.webp',
+        url: '/chord-reaper-mark.webp',
         width: 1200,
         height: 630,
-        alt: 'Eclectify - AI Music Analysis Platform',
+        alt: 'Chord Reaper - AI Music Analysis Platform',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Eclectify - AI-Powered Music Analysis',
+    title: 'Chord Reaper - AI-Powered Music Analysis',
     description: 'Advanced music analysis platform with AI-powered chord recognition, beat detection, and synchronized lyrics.',
-    images: ['/eclectifyLogo.webp'],
+    images: ['/chord-reaper-mark.webp'],
   },
   verification: {
     google: 'google-site-verification-code', // To be replaced with actual verification code
@@ -191,9 +191,9 @@ export default function RootLayout({
 
         {/* Favicon configuration for better browser compatibility */}
         <link rel="icon" href="/favicon.ico" sizes="32x32" />
-        <link rel="icon" href="/eclectifyLogo.webp" type="image/webp" sizes="32x32" />
-        <link rel="icon" href="/eclectifyLogo.webp" type="image/webp" sizes="16x16" />
-        <link rel="apple-touch-icon" href="/eclectifyLogo.webp" sizes="180x180" />
+        <link rel="icon" href="/chord-reaper-mark.webp" type="image/webp" sizes="32x32" />
+        <link rel="icon" href="/chord-reaper-mark.webp" type="image/webp" sizes="16x16" />
+        <link rel="apple-touch-icon" href="/chord-reaper-mark.webp" sizes="180x180" />
         <link rel="manifest" href="/site.webmanifest" />
 
         {/* Removed global image preloads: let Next/Image with priority handle above-the-fold assets on the pages that use them to avoid preload-not-used warnings. */}
