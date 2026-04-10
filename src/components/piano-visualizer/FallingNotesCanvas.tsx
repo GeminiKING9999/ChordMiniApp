@@ -369,7 +369,7 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
       return { drawTop, drawHeight, opacity, isActive };
     };
 
-    if (hasInstruments) {
+    if (hasInstruments && !simpleMode) {
       // ─── Instrument-specific rendering ─────────────────────────────────
       for (const note of instrumentVisualNotes) {
         if (!note.pos) continue;
