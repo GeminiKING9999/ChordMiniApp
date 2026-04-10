@@ -56,6 +56,10 @@ interface FallingNotesCanvasProps {
   extraVisualNotes?: ExtraVisualNote[];
   /** Callback: set of active MIDI notes at current time */
   onActiveNotesChange?: (notes: Set<number>, colors: Map<number, string>) => void;
+  /** Simple mode: show only root note per chord */
+  simpleMode?: boolean;
+  /** Colorful mode: each pitch class gets a unique color */
+  colorfulMode?: boolean;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -64,23 +68,27 @@ const DEFAULT_WHITE_KEY_WIDTH = 14;
 
 // Default colors for chord degrees / note function
 const DEFAULT_NOTE_COLOR = '#60a5fa'; // blue-400
-// const BASS_NOTE_COLOR = '#f97316';    // orange-500
-// const ROOT_NOTE_COLOR = '#60a5fa';    // blue-400
-// const THIRD_COLOR = '#34d399';        // emerald-400
-// const FIFTH_COLOR = '#a78bfa';        // violet-400
-// const SEVENTH_COLOR = '#f472b6';      // pink-400
-// const EXTENSION_COLOR = '#fbbf24';    // amber-400
 
-// Color palette for chord tones by interval position
-// const INTERVAL_COLORS = [
-//   ROOT_NOTE_COLOR,   // Root (1st)
-//   THIRD_COLOR,       // 3rd
-//   FIFTH_COLOR,       // 5th
-//   SEVENTH_COLOR,     // 7th
-//   EXTENSION_COLOR,   // 9th, 11th, 13th etc
-//   '#22d3ee',         // cyan-400
-//   '#fb923c',         // orange-400
-// ];
+// Chromatic color map — one unique vivid color per pitch class
+const CHROMATIC_COLORS: Record<number, string> = {
+  0:  '#ef4444', // C  — red
+  1:  '#f97316', // C# — orange
+  2:  '#eab308', // D  — yellow
+  3:  '#84cc16', // D# — lime
+  4:  '#22c55e', // E  — green
+  5:  '#14b8a6', // F  — teal
+  6:  '#06b6d4', // F# — cyan
+  7:  '#3b82f6', // G  — blue
+  8:  '#6366f1', // G# — indigo
+  9:  '#8b5cf6', // A  — purple
+  10: '#d946ef', // A# — fuchsia
+  11: '#ec4899', // B  — pink
+};
+
+/** Get color for a note. In colorful mode, uses pitch class. Otherwise uniform blue. */
+function getChromaticColor(midi: number): string {
+  return CHROMATIC_COLORS[midi % 12] || DEFAULT_NOTE_COLOR;
+}
 
 // Hit line position from bottom (where notes "land")
 const HIT_LINE_Y_RATIO = 0.88;
@@ -121,6 +129,8 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
   playbackTime,
   extraVisualNotes = [],
   onActiveNotesChange,
+  simpleMode = false,
+  colorfulMode = false,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
@@ -182,17 +192,21 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
   }, [chordEvents]);
 
   // Precompute note positions for default (non-instrument) rendering
+  // In simple mode, only show root note (notes[0])
   const eventPositions = useMemo(() => {
-    return mergedChordEvents.map(event => ({
-      ...event,
-      notePositions: event.notes.map((note, idx) => ({
-        ...note,
-        pos: midiKeyPositions.get(note.midi) ?? null,
-        color: getNoteColor(idx, idx === 0 && note.octave <= 2),
-        intervalIndex: idx,
-      })),
-    }));
-  }, [mergedChordEvents, midiKeyPositions]);
+    return mergedChordEvents.map(event => {
+      const notesToShow = simpleMode ? event.notes.slice(0, 1) : event.notes;
+      return {
+        ...event,
+        notePositions: notesToShow.map((note, idx) => ({
+          ...note,
+          pos: midiKeyPositions.get(note.midi) ?? null,
+          color: colorfulMode ? getChromaticColor(note.midi) : getNoteColor(idx, idx === 0 && note.octave <= 2),
+          intervalIndex: idx,
+        })),
+      };
+    });
+  }, [mergedChordEvents, midiKeyPositions, simpleMode, colorfulMode]);
 
   // Precompute instrument-specific visual notes when instruments are active
   // Uses shared module (single source of truth with audio playback)
@@ -367,13 +381,14 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
         const { x, width } = note.pos;
         const noteX = x + 1;
         const noteW = width - 2;
+        const noteColor = colorfulMode ? getChromaticColor(note.midi) : note.color;
 
         if (geom.isActive) {
           activeNotes.add(note.midi);
-          activeColors.set(note.midi, note.color);
+          activeColors.set(note.midi, noteColor);
         }
 
-        drawNote(noteX, noteW, geom.drawTop, geom.drawHeight, note.color, geom.isActive, geom.opacity);
+        drawNote(noteX, noteW, geom.drawTop, geom.drawHeight, noteColor, geom.isActive, geom.opacity);
       }
     } else {
       // ─── Default interval-based coloring ─────────────────────────────────
@@ -431,7 +446,7 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
       prevActiveSignatureRef.current = activeSignature;
       onActiveNotesChange?.(activeNotes, activeColors);
     }
-  }, [eventPositions, extraVisualNotes, instrumentVisualNotes, midiKeyPositions, whiteKeyXPositions, lookAheadSeconds, lookBehindSeconds, onActiveNotesChange, hasInstruments]);
+  }, [eventPositions, extraVisualNotes, instrumentVisualNotes, midiKeyPositions, whiteKeyXPositions, lookAheadSeconds, lookBehindSeconds, onActiveNotesChange, hasInstruments, colorfulMode]);
 
   // Keep renderFrameRef in sync with the latest renderFrame callback.
   useEffect(() => {

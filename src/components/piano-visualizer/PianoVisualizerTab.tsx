@@ -370,6 +370,8 @@ export const PianoVisualizerTab: React.FC<PianoVisualizerTabProps> = ({
   const [activeNotes, setActiveNotes] = useState<Set<number>>(new Set());
   const [noteColors, setNoteColors] = useState<Map<number, string>>(new Map());
   const activeNotesSignatureRef = useRef('');
+  const [simpleMode, setSimpleMode] = useState(false);
+  const [colorfulMode, setColorfulMode] = useState(false);
 
   // Container ref for responsive width
   const containerRef = useRef<HTMLDivElement>(null);
@@ -767,6 +769,78 @@ export const PianoVisualizerTab: React.FC<PianoVisualizerTabProps> = ({
                 ))}
               </div>
             </div>
+
+            {/* Simple / Full mode toggle */}
+            <div className={`flex items-center space-x-1.5 ${effectiveDisplayMode === 'sheet-music' ? 'opacity-50' : ''}`}>
+              <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                <AppTooltip content="Show all chord tones (full voicing)">
+                  <span className="inline-flex">
+                    <button
+                      onClick={() => setSimpleMode(false)}
+                      disabled={effectiveDisplayMode === 'sheet-music'}
+                      className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                        !simpleMode
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      Full
+                    </button>
+                  </span>
+                </AppTooltip>
+                <AppTooltip content="Show only root note per chord (beginner-friendly)">
+                  <span className="inline-flex">
+                    <button
+                      onClick={() => setSimpleMode(true)}
+                      disabled={effectiveDisplayMode === 'sheet-music'}
+                      className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                        simpleMode
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      Simple
+                    </button>
+                  </span>
+                </AppTooltip>
+              </div>
+            </div>
+
+            {/* Solid / Colorful toggle */}
+            <div className={`flex items-center space-x-1.5 ${effectiveDisplayMode === 'sheet-music' ? 'opacity-50' : ''}`}>
+              <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                <AppTooltip content="Uniform note color">
+                  <span className="inline-flex">
+                    <button
+                      onClick={() => setColorfulMode(false)}
+                      disabled={effectiveDisplayMode === 'sheet-music'}
+                      className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                        !colorfulMode
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      Solid
+                    </button>
+                  </span>
+                </AppTooltip>
+                <AppTooltip content="Each note gets a unique color by pitch">
+                  <span className="inline-flex">
+                    <button
+                      onClick={() => setColorfulMode(true)}
+                      disabled={effectiveDisplayMode === 'sheet-music'}
+                      className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+                        colorfulMode
+                          ? 'bg-gradient-to-r from-red-500 via-green-500 to-blue-500 text-white shadow-sm'
+                          : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      Colorful
+                    </button>
+                  </span>
+                </AppTooltip>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -844,6 +918,8 @@ export const PianoVisualizerTab: React.FC<PianoVisualizerTabProps> = ({
                   playbackTime={currentTime}
                   extraVisualNotes={melodyOverlayNotes}
                   onActiveNotesChange={handleActiveNotesChange}
+                  simpleMode={simpleMode}
+                  colorfulMode={colorfulMode}
                 />
               </div>
 
