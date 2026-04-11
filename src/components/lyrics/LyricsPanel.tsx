@@ -267,7 +267,7 @@ const LyricsPanel: React.FC<LyricsPanelProps> = React.memo(({
                   {hasSynced && displayMode === 'sync' && (
                     <div className="flex items-center gap-0.5">
                       <button
-                        onClick={() => setLyricsOffsetMs(prev => Math.max(-2000, prev - 100))}
+                        onClick={() => setLyricsOffsetMs(prev => Math.max(-5000, prev - 100))}
                         className="px-1.5 py-0.5 text-[11px] rounded-l-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-mono"
                         title="Lyrics earlier"
                       >−</button>
@@ -275,7 +275,7 @@ const LyricsPanel: React.FC<LyricsPanelProps> = React.memo(({
                         {lyricsOffsetMs >= 0 ? '+' : ''}{(lyricsOffsetMs / 1000).toFixed(1)}s
                       </span>
                       <button
-                        onClick={() => setLyricsOffsetMs(prev => Math.min(2000, prev + 100))}
+                        onClick={() => setLyricsOffsetMs(prev => Math.min(5000, prev + 100))}
                         className="px-1.5 py-0.5 text-[11px] rounded-r-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-mono"
                         title="Lyrics later"
                       >+</button>
