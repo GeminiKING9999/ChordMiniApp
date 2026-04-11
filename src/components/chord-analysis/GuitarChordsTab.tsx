@@ -476,12 +476,11 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
     );
   }
 
-  // DEFINE A SLOW, SMOOTH TWEEN TRANSITION
-  // This provides a graceful, predictable motion that stops precisely on time.
+  // Snappy transition – chord cards should appear/reposition instantly
   const itemTransition = {
     type: "tween",
-    duration: 0.8,
-    ease: "easeInOut"
+    duration: 0.12,
+    ease: "easeOut"
   };
 
   return (

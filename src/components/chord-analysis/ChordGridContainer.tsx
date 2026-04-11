@@ -152,13 +152,26 @@ export const ChordGridContainer: React.FC<ChordGridContainerProps> = React.memo(
       effectiveCapoFret > 0 ? calculateTargetKey(displayKey || 'C', -effectiveCapoFret) : undefined
     );
 
-    const transformedChords = effectiveChordGridData.chords.map(chord => {
+    const capoTransposeChord = (chord: string) => {
       if (!chord || chord === 'N.C.' || chord === 'N' || chord === 'N/C' || chord === 'NC') return chord;
-      if (effectiveCapoFret === 0) return chord;
-      
       const rawShape = transposeChord(chord, -effectiveCapoFret, effectiveCapoTargetKey || displayKey || 'C');
       return chordMappingService.getPreferredDiagramChordName(rawShape);
-    });
+    };
+
+    const transformedChords = effectiveCapoFret > 0
+      ? effectiveChordGridData.chords.map(capoTransposeChord)
+      : effectiveChordGridData.chords;
+
+    // Transpose correction display chords when capo is active so getDisplayChord
+    // returns capo-adjusted names instead of the original un-transposed ones.
+    // Keep originalSequence un-transposed — buildChordSequenceIndexMap needs it
+    // to align with the un-transposed originalAudioMapping chord names.
+    const transformedSequenceCorrections = effectiveCapoFret > 0 && effectiveSequenceCorrections
+      ? {
+          ...effectiveSequenceCorrections,
+          correctedSequence: effectiveSequenceCorrections.correctedSequence.map(capoTransposeChord),
+        }
+      : effectiveSequenceCorrections;
 
     return {
       chords: transformedChords,
@@ -179,7 +192,7 @@ export const ChordGridContainer: React.FC<ChordGridContainerProps> = React.memo(
       isUploadPage,
       showCorrectedChords: effectiveShowCorrectedChords,
       chordCorrections: effectiveChordCorrections,
-      sequenceCorrections: effectiveSequenceCorrections,
+      sequenceCorrections: transformedSequenceCorrections,
       segmentationData,
       showSegmentation,
       showRomanNumerals: mergedShowRomanNumerals,
