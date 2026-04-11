@@ -4,7 +4,8 @@ import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import { ChordEvent, isBlackKey } from '@/utils/chordToMidi';
 import {
   attachVisualNotePositions,
-  generateAllInstrumentVisualNotes,
+  generateBaseInstrumentSchedule,
+  resolveInstrumentVisualNotes,
   mergeConsecutiveChordEvents,
   type SignalDynamicsSource,
   type ActiveInstrument,
@@ -208,11 +209,11 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
     });
   }, [mergedChordEvents, midiKeyPositions, simpleMode, colorfulMode]);
 
-  // Precompute instrument-specific visual notes when instruments are active
-  // Uses shared module (single source of truth with audio playback)
-  const instrumentVisualTimings = useMemo(() => {
+  // Phase 1 (cached): Generate base instrument schedules — expensive instrument
+  // pattern generation that only recomputes when chord data or instruments change.
+  const baseInstrumentSchedule = useMemo(() => {
     if (!hasInstruments || chordEvents.length === 0) return [];
-    return generateAllInstrumentVisualNotes(
+    return generateBaseInstrumentSchedule(
       chordEvents,
       activeInstruments,
       bpm,
@@ -221,7 +222,6 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
       guitarVoicing,
       targetKey,
       signalDynamicsSource,
-      playbackTime,
     );
   }, [
     chordEvents,
@@ -233,8 +233,14 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
     guitarVoicing,
     targetKey,
     signalDynamicsSource,
-    playbackTime,
   ]);
+
+  // Phase 2 (cheap, ~4 Hz): Apply playbackTime adjustments and convert to
+  // VisualNote[]. Only lightweight filtering — no instrument pattern generation.
+  const instrumentVisualTimings = useMemo(() => {
+    if (baseInstrumentSchedule.length === 0) return [];
+    return resolveInstrumentVisualNotes(baseInstrumentSchedule, playbackTime);
+  }, [baseInstrumentSchedule, playbackTime]);
 
   const instrumentVisualNotes = useMemo(
     () => attachVisualNotePositions(instrumentVisualTimings, midiKeyPositions),

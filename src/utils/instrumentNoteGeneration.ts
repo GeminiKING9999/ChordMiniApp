@@ -1009,10 +1009,27 @@ export interface SignalDynamicsSource {
   getSignalDynamics(time: number, chordDuration?: number): ChordSignalDynamics | null;
 }
 
+// ─── Two-phase instrument note generation ────────────────────────────────────
+// Phase 1 (expensive): generate all ScheduledNotes via instrument patterns.
+//   Only recomputes when chord data, instruments, or BPM change.
+// Phase 2 (cheap): apply playbackTime adjustments and convert to VisualNote[].
+//   Runs every ~250 ms (4 Hz timeupdate) but does only lightweight filtering.
+
+/** Intermediate result from Phase 1: per-event per-instrument scheduled notes. */
+export interface BaseInstrumentSchedule {
+  startTime: number;
+  endTime: number;
+  instrumentName: InstrumentName;
+  color: string;
+  chordName: string;
+  scheduled: ScheduledNote[];
+}
+
 /**
- * Generate visual notes for all instruments across all chord events.
+ * Phase 1: Generate base instrument schedules for all chord events.
+ * This is the expensive step (instrument pattern generation, MIDI math).
  */
-export function generateAllInstrumentVisualNotes(
+export function generateBaseInstrumentSchedule(
   events: ChordEvent[],
   instruments: ActiveInstrument[],
   bpm?: number,
@@ -1021,14 +1038,9 @@ export function generateAllInstrumentVisualNotes(
   guitarVoicing?: Partial<GuitarVoicingSelection>,
   targetKey?: string,
   signalDynamicsSource?: SignalDynamicsSource | null,
-  playbackTime?: number,
-): VisualNote[] {
-  const notes: VisualNote[] = [];
-
-  // Merge consecutive beats with same chord — audio only triggers on chord changes
+): BaseInstrumentSchedule[] {
+  const result: BaseInstrumentSchedule[] = [];
   const merged = mergeConsecutiveChordEvents(events);
-  // Use BPM-based beat duration when available (matches audio path exactly).
-  // Fall back to estimated beat duration from raw events when beat counts are unavailable.
   const bd = bpm ? beatDurationFromBpm(bpm) : estimateBeatDuration(events);
 
   for (const event of merged) {
@@ -1040,8 +1052,6 @@ export function generateAllInstrumentVisualNotes(
 
     for (const inst of instruments) {
       const instrumentName = inst.name.toLowerCase() as InstrumentName;
-      const color = inst.color;
-
       const scheduled = generateNotesForInstrument(instrumentName, {
         chordName,
         chordNotes,
@@ -1054,52 +1064,91 @@ export function generateAllInstrumentVisualNotes(
         guitarVoicing,
         targetKey,
       });
-      const visualScheduled = playbackTime !== undefined
-        ? scheduled
-          .map((sn) => {
-            const elapsedInChord = Math.max(0, playbackTime - startTime);
-            const originalEndOffset = sn.startOffset + sn.duration;
+      result.push({ startTime, endTime, instrumentName, color: inst.color, chordName, scheduled });
+    }
+  }
 
-            if (originalEndOffset > elapsedInChord) {
-              return sn;
-            }
+  return result;
+}
 
-            const recovered = adjustScheduledNotesForPlayback([sn], {
-              instrumentName,
-              elapsedInChord,
-            })[0];
+/**
+ * Phase 2: Resolve base schedules into VisualNote[], applying optional
+ * playbackTime adjustments. This is cheap — only filtering and mapping.
+ */
+export function resolveInstrumentVisualNotes(
+  schedule: BaseInstrumentSchedule[],
+  playbackTime?: number,
+): VisualNote[] {
+  const notes: VisualNote[] = [];
 
-            if (!recovered) {
-              return null;
-            }
+  for (const entry of schedule) {
+    const { startTime, endTime, instrumentName, color, chordName, scheduled } = entry;
 
-            return {
-              ...recovered,
-              startOffset: Math.max(0, playbackTime - startTime),
-            } satisfies ScheduledNote;
-          })
-          .filter((sn): sn is ScheduledNote => sn !== null)
-        : scheduled;
+    const visualScheduled = playbackTime !== undefined
+      ? scheduled
+        .map((sn) => {
+          const elapsedInChord = Math.max(0, playbackTime - startTime);
+          const originalEndOffset = sn.startOffset + sn.duration;
 
-      for (const sn of visualScheduled) {
-        const visualTail = getInstrumentVisualSustainTailSeconds(instrumentName);
-        const noteStartTime = startTime + sn.startOffset;
-        const symbolicEndTime = noteStartTime + sn.duration;
-        const clippedVisualEndTime = Math.min(endTime, symbolicEndTime + visualTail);
-        notes.push({
-          midi: sn.midi,
-          startTime: noteStartTime,
-          // Keep the audible tail within the active chord window so the piano roll
-          // stays notation-like instead of showing cross-chord overlap.
-          endTime: clippedVisualEndTime,
-          color,
-          chordName,
-        });
-      }
+          if (originalEndOffset > elapsedInChord) {
+            return sn;
+          }
+
+          const recovered = adjustScheduledNotesForPlayback([sn], {
+            instrumentName,
+            elapsedInChord,
+          })[0];
+
+          if (!recovered) {
+            return null;
+          }
+
+          return {
+            ...recovered,
+            startOffset: Math.max(0, playbackTime - startTime),
+          } satisfies ScheduledNote;
+        })
+        .filter((sn): sn is ScheduledNote => sn !== null)
+      : scheduled;
+
+    for (const sn of visualScheduled) {
+      const visualTail = getInstrumentVisualSustainTailSeconds(instrumentName);
+      const noteStartTime = startTime + sn.startOffset;
+      const symbolicEndTime = noteStartTime + sn.duration;
+      const clippedVisualEndTime = Math.min(endTime, symbolicEndTime + visualTail);
+      notes.push({
+        midi: sn.midi,
+        startTime: noteStartTime,
+        endTime: clippedVisualEndTime,
+        color,
+        chordName,
+      });
     }
   }
 
   return notes;
+}
+
+/**
+ * Generate visual notes for all instruments across all chord events.
+ * Convenience wrapper that runs both phases in one call.
+ */
+export function generateAllInstrumentVisualNotes(
+  events: ChordEvent[],
+  instruments: ActiveInstrument[],
+  bpm?: number,
+  timeSignature?: number,
+  segmentationData?: SegmentationResult | null,
+  guitarVoicing?: Partial<GuitarVoicingSelection>,
+  targetKey?: string,
+  signalDynamicsSource?: SignalDynamicsSource | null,
+  playbackTime?: number,
+): VisualNote[] {
+  const schedule = generateBaseInstrumentSchedule(
+    events, instruments, bpm, timeSignature,
+    segmentationData, guitarVoicing, targetKey, signalDynamicsSource,
+  );
+  return resolveInstrumentVisualNotes(schedule, playbackTime);
 }
 
 export function attachVisualNotePositions(
