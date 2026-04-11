@@ -100,17 +100,20 @@ export default function LocalAudioAnalyzePage() {
   const showSheetSage = true;
   useSheetSageBackendAvailability(showSheetSage);
   const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  // Phase 2A: Read playback state from Zustand store (single source of truth)
+  const isPlaying = usePlaybackStore(s => s.isPlaying);
+  const currentTime = usePlaybackStore(s => s.currentTime);
+  const duration = usePlaybackStore(s => s.duration);
+  // Stable setters that write directly to the store (same signature as former useState setters)
+  const setIsPlaying = useCallback((playing: boolean) => usePlaybackStore.getState().setIsPlaying(playing), []);
+  const setCurrentTime = useCallback((time: number) => usePlaybackStore.getState().setCurrentTime(time), []);
+  const setDuration = useCallback((dur: number) => usePlaybackStore.getState().setDuration(dur), []);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [lyricSearchTitle, setLyricSearchTitle] = useState('');
   const [lyricSearchArtist, setLyricSearchArtist] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
-  // Phase 1C: Precision time ref (updated every timeupdate tick, bypasses React render)
-  const currentTimeRef = useRef(0);
-  // Phase 1C: Throttle React state updates to ≤10 Hz to reduce re-render cascade
+  // Throttle store updates to ≤10 Hz to minimize re-render cascade
   const lastDisplayUpdateRef = useRef(0);
 
   const { lyrics, completeLyricsTranscription } = useLyricsState();
@@ -399,8 +402,10 @@ export default function LocalAudioAnalyzePage() {
 
 
   // Current state for playback - FIXED: Add missing state variables for beat animation
-  const [currentBeatIndex, setCurrentBeatIndex] = useState(-1);
+  // Phase 2B: Single source — read from store, keep ref for rAF dedup
+  const currentBeatIndex = usePlaybackStore(s => s.currentBeatIndex);
   const currentBeatIndexRef = useRef(-1);
+  const setCurrentBeatIndex = useCallback((idx: number) => usePlaybackStore.getState().setCurrentBeatIndex(idx), []);
   const lastScrollTimeRef = useRef(0);
 
   const [isFollowModeEnabled, setIsFollowModeEnabled] = useState(true);
@@ -741,10 +746,7 @@ export default function LocalAudioAnalyzePage() {
     };
     const handleTimeUpdate = () => {
       if (!audioElement) return;
-      // Phase 1C: Always update ref for any consumer that reads time without React state
-      currentTimeRef.current = audioElement.currentTime;
-      // Throttle React state to ≤10 Hz — reduces the full re-render + Zustand sync cascade
-      // from firing on every browser timeupdate tick to at most once per 100ms
+      // Throttle store updates to ≤10 Hz to avoid excessive re-renders
       const now = performance.now();
       if (now - lastDisplayUpdateRef.current >= 100) {
         lastDisplayUpdateRef.current = now;
@@ -1065,9 +1067,7 @@ const simplifiedChordGridData = useMemo(() => {
     analysisStore.setIsTranscribingLyrics(false);
     analysisStore.setLyricsError(null);
 
-    // Infrequent playback state — only changes on play/pause, load, or rate change
-    playbackStore.setIsPlaying(isPlaying);
-    playbackStore.setDuration(duration);
+    // Infrequent playback state — playbackRate still local, isPlaying/duration driven by store
     playbackStore.setPlaybackRate(playbackRate);
     playbackStore.setYoutubePlayer(null); // No YouTube player in upload page
     playbackStore.setAudioRef(audioRef as React.RefObject<HTMLAudioElement>);
@@ -1075,18 +1075,11 @@ const simplifiedChordGridData = useMemo(() => {
     // CRITICAL: Do NOT include showRomanNumerals, simplifyChords, or other Zustand-managed state
     // Only include local state that needs to be synced to Zustand
     analysisResults, audioProcessingState.isAnalyzing, audioProcessingState.error,
-    isPlaying, duration, playbackRate
+    playbackRate
   ]);
 
-  // Phase 1C: Separate high-frequency playback sync — keeps the fast path lightweight
-  // instead of re-running all analysis store setters on every 100ms tick
-  useEffect(() => {
-    usePlaybackStore.getState().setCurrentTime(currentTime);
-  }, [currentTime]);
-
-  useEffect(() => {
-    usePlaybackStore.getState().setCurrentBeatIndex(currentBeatIndex);
-  }, [currentBeatIndex]);
+  // Phase 2: currentTime, isPlaying, duration, currentBeatIndex are now
+  // driven directly from the store — no sync useEffects needed
 
   useEffect(() => {
     useAnalysisStore.getState().clearSheetSage();
