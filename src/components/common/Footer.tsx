@@ -64,19 +64,19 @@ const Footer: React.FC = () => {
                   <Image
                     src="/chord-reaper-mark.webp"
                     alt="Chord Reaper Logo"
-                    width={40}
-                    height={40}
-                    sizes="40px"
-                    className="w-10 h-10 block dark:hidden rounded-lg"
+                    width={48}
+                    height={48}
+                    sizes="48px"
+                    className="w-12 h-12 block dark:hidden rounded-lg"
                   />
                   {/* Dark theme logo - hidden in light mode */}
                   <Image
                     src="/chord-reaper-mark-dark.webp"
                     alt="Chord Reaper Logo"
-                    width={40}
-                    height={40}
-                    sizes="40px"
-                    className="w-10 h-10 hidden dark:block rounded-lg"
+                    width={48}
+                    height={48}
+                    sizes="48px"
+                    className="w-12 h-12 hidden dark:block rounded-lg"
                   />
                 </Link>
                 <div>

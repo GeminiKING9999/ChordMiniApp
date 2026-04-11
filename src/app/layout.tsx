@@ -86,28 +86,17 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
-      { url: '/chord-reaper-mark.webp', sizes: '192x192', type: 'image/webp' },
-      { url: '/chord-reaper-mark.webp', sizes: '512x512', type: 'image/webp' }
+      { url: '/favicon.ico', sizes: '48x48', type: 'image/x-icon' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-48x48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' }
     ],
     shortcut: '/favicon.ico',
     apple: [
-      { url: '/chord-reaper-mark.webp', sizes: '180x180', type: 'image/webp' }
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
     ],
-    other: [
-      {
-        rel: 'icon',
-        type: 'image/webp',
-        sizes: '32x32',
-        url: '/chord-reaper-mark.webp',
-      },
-      {
-        rel: 'icon',
-        type: 'image/webp',
-        sizes: '16x16',
-        url: '/chord-reaper-mark.webp',
-      }
-    ]
   },
   openGraph: {
     type: 'website',
@@ -190,10 +179,10 @@ export default function RootLayout({
         <meta name="description" content="Recognize chords from audio using AI" />
 
         {/* Favicon configuration for better browser compatibility */}
-        <link rel="icon" href="/favicon.ico" sizes="32x32" />
-        <link rel="icon" href="/chord-reaper-mark.webp" type="image/webp" sizes="32x32" />
-        <link rel="icon" href="/chord-reaper-mark.webp" type="image/webp" sizes="16x16" />
-        <link rel="apple-touch-icon" href="/chord-reaper-mark.webp" sizes="180x180" />
+        <link rel="icon" href="/favicon.ico" sizes="48x48" />
+        <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+        <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
         <link rel="manifest" href="/site.webmanifest" />
 
         {/* Removed global image preloads: let Next/Image with priority handle above-the-fold assets on the pages that use them to avoid preload-not-used warnings. */}

@@ -133,21 +133,21 @@ const Navigation: React.FC<NavigationProps> = ({ className = '', showStickySearc
             <Image
               src="/chord-reaper-mark.webp"
               alt="Chord Reaper Logo"
-              width={40}
-              height={40}
-              sizes="40px"
+              width={48}
+              height={48}
+              sizes="48px"
               className="mr-2 transition-transform duration-200 group-hover:scale-105 rounded-lg block dark:hidden"
-              style={{ width: '40px', height: '40px' }}
+              style={{ width: '48px', height: '48px' }}
             />
             {/* Dark theme logo - hidden in light mode */}
             <Image
               src="/chord-reaper-mark-dark.webp"
               alt="Chord Reaper Logo"
-              width={40}
-              height={40}
-              sizes="40px"
+              width={48}
+              height={48}
+              sizes="48px"
               className="mr-2 rounded-lg hidden transition-all duration-200 group-hover:scale-105 dark:block dark:opacity-60 dark:group-hover:opacity-85"
-              style={{ width: '40px', height: '40px' }}
+              style={{ width: '48px', height: '48px' }}
             />
             <h1 className="text-xl font-nunito font-extrabold text-foreground transition-colors duration-300 group-hover:text-purple-600 dark:group-hover:text-neon-purple tracking-tight">
               Chord Reaper
