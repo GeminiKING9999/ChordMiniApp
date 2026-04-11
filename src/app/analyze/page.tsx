@@ -450,9 +450,6 @@ export default function LocalAudioAnalyzePage() {
 
   // Get state from Zustand stores (only what's actually used in this page)
 
-  // Track transient stage timeout for analysis status so we can clean it up on unmount
-  const stageTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   // Note: simplifyChords, showRomanNumerals, showSegmentation are managed by Zustand
   // and accessed directly by child components via their own selectors
   const hasSheetSageNotes = (sheetSageResult?.noteEvents?.length ?? 0) > 0;
@@ -588,8 +585,6 @@ export default function LocalAudioAnalyzePage() {
   const processAudioFile = async () => {
     if (!audioFile) return;
 
-    stageTimeoutRef.current = null;
-
     try {
       // Start processing context
       startProcessing();
@@ -668,12 +663,6 @@ export default function LocalAudioAnalyzePage() {
       // Analysis completed successfully
     } catch (error) {
       console.error('Error in audio processing:', error);
-
-      // Clear timeout on error
-      if (stageTimeoutRef.current) {
-        clearTimeout(stageTimeoutRef.current);
-        stageTimeoutRef.current = null;
-      }
 
       // Format error message more user-friendly
       let errorMessage = 'Unknown error occurred';
@@ -1031,12 +1020,6 @@ const simplifiedChordGridData = useMemo(() => {
     return () => {
       // Abort any active countdown interval
       cancelCountdown();
-      // Clear any pending stage timeout
-      if (stageTimeoutRef.current) {
-        clearTimeout(stageTimeoutRef.current);
-        stageTimeoutRef.current = null;
-      }
-
       useUIStore.getState().resetAnalysisUtilityBarState();
       usePlaybackStore.getState().setIsFollowModeEnabled(true);
       disableMetronomeService();
