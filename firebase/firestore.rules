@@ -71,17 +71,17 @@ service cloud.firestore {
         // Standard validation for authenticated users
         (request.auth != null &&
          isValidVideoId(videoId) &&
-         isValidAudioData(resource.data) &&
+         isValidAudioData(request.resource.data) &&
          isWithinRateLimit()) ||
 
         // Relaxed validation for cold start scenarios (unauthenticated writes)
         (request.auth == null &&
          isValidVideoId(videoId) &&
-         resource.data.keys().hasAll(['videoId', 'audioUrl', 'title', 'createdAt']) &&
-         resource.data.videoId is string &&
-         resource.data.audioUrl is string &&
-         resource.data.title is string &&
-         resource.data.size() <= 20) // More permissive field limit for cold starts
+         request.resource.data.keys().hasAll(['videoId', 'audioUrl', 'title', 'createdAt']) &&
+         request.resource.data.videoId is string &&
+         request.resource.data.audioUrl is string &&
+         request.resource.data.title is string &&
+         request.resource.data.size() <= 20) // More permissive field limit for cold starts
       );
 
       // Allow updates with similar relaxed validation
@@ -89,14 +89,14 @@ service cloud.firestore {
         // Standard validation for authenticated users
         (request.auth != null &&
          isValidVideoId(videoId) &&
-         isValidAudioData(resource.data) &&
+         isValidAudioData(request.resource.data) &&
          isWithinRateLimit()) ||
 
         // Relaxed validation for cold start scenarios
         (request.auth == null &&
          isValidVideoId(videoId) &&
-         resource.data.videoId is string &&
-         resource.data.size() <= 20)
+         request.resource.data.videoId is string &&
+         request.resource.data.size() <= 20)
       );
 
       // Prevent deletion by regular users (only allow expiration)
@@ -109,11 +109,11 @@ service cloud.firestore {
       allow read: if true;
 
       // Allow write access with validation
-      allow create: if isValidTranscriptionData(resource.data) &&
+      allow create: if isValidTranscriptionData(request.resource.data) &&
                        isWithinRateLimit();
 
       // Allow updates with validation
-      allow update: if isValidTranscriptionData(resource.data) &&
+      allow update: if isValidTranscriptionData(request.resource.data) &&
                        isWithinRateLimit();
 
       // Prevent deletion by regular users
@@ -244,10 +244,10 @@ service cloud.firestore {
     // User feedback and error reports - allow anonymous submissions
     match /feedback/{documentId} {
       allow read: if false; // Feedback is private
-      allow create: if resource.data.keys().hasAll(['message', 'createdAt']) &&
-                       resource.data.message is string &&
-                       resource.data.message.size() <= 1000 &&
-                       isValidTimestamp(resource.data.createdAt) &&
+      allow create: if request.resource.data.keys().hasAll(['message', 'createdAt']) &&
+                       request.resource.data.message is string &&
+                       request.resource.data.message.size() <= 1000 &&
+                       isValidTimestamp(request.resource.data.createdAt) &&
                        isWithinRateLimit();
       allow update, delete: if false;
     }
@@ -255,10 +255,10 @@ service cloud.firestore {
     // Error logs - for debugging and monitoring
     match /errorLogs/{documentId} {
       allow read: if false; // Error logs are private
-      allow create: if resource.data.keys().hasAll(['error', 'createdAt']) &&
-                       resource.data.error is string &&
-                       resource.data.error.size() <= 2000 &&
-                       isValidTimestamp(resource.data.createdAt) &&
+      allow create: if request.resource.data.keys().hasAll(['error', 'createdAt']) &&
+                       request.resource.data.error is string &&
+                       request.resource.data.error.size() <= 2000 &&
+                       isValidTimestamp(request.resource.data.createdAt) &&
                        isWithinRateLimit();
       allow update, delete: if false;
     }
