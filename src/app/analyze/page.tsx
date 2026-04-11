@@ -1055,7 +1055,7 @@ const simplifiedChordGridData = useMemo(() => {
   }, [cancelCountdown, disableMetronomeService]);
 
 
-  // Initialize Zustand stores with page state
+  // Initialize Zustand stores with page state (analysis + infrequent playback)
   // CRITICAL: Do NOT include Zustand-managed state (showRomanNumerals, simplifyChords) in dependencies
   // as that creates a circular loop causing race conditions during playback
   useEffect(() => {
@@ -1078,20 +1078,28 @@ const simplifiedChordGridData = useMemo(() => {
     analysisStore.setIsTranscribingLyrics(false);
     analysisStore.setLyricsError(null);
 
-    // Initialize PlaybackStore
+    // Infrequent playback state — only changes on play/pause, load, or rate change
     playbackStore.setIsPlaying(isPlaying);
-    playbackStore.setCurrentTime(currentTime);
     playbackStore.setDuration(duration);
     playbackStore.setPlaybackRate(playbackRate);
     playbackStore.setYoutubePlayer(null); // No YouTube player in upload page
     playbackStore.setAudioRef(audioRef as React.RefObject<HTMLAudioElement>);
-    playbackStore.setCurrentBeatIndex(currentBeatIndex);
   }, [
     // CRITICAL: Do NOT include showRomanNumerals, simplifyChords, or other Zustand-managed state
     // Only include local state that needs to be synced to Zustand
     analysisResults, audioProcessingState.isAnalyzing, audioProcessingState.error,
-    isPlaying, currentTime, duration, playbackRate, currentBeatIndex
+    isPlaying, duration, playbackRate
   ]);
+
+  // Phase 1C: Separate high-frequency playback sync — keeps the fast path lightweight
+  // instead of re-running all analysis store setters on every 100ms tick
+  useEffect(() => {
+    usePlaybackStore.getState().setCurrentTime(currentTime);
+  }, [currentTime]);
+
+  useEffect(() => {
+    usePlaybackStore.getState().setCurrentBeatIndex(currentBeatIndex);
+  }, [currentBeatIndex]);
 
   useEffect(() => {
     useAnalysisStore.getState().clearSheetSage();
@@ -1230,7 +1238,7 @@ const simplifiedChordGridData = useMemo(() => {
                   <div className="tab-content">
                     {/* Beat & Chord Map Tab */}
                     {activeTab === 'beatChordMap' && (
-                      <ScrollableTabContainer variant="plain" heightClass="h-[60vh] md:h-[66vh]">
+                      <ScrollableTabContainer variant="plain" heightClass="h-[60vh] md:h-[66vh]" className="tab-panel-enter">
                         <div className={`flex flex-col md:flex-row gap-4`}>
                           {/* Grid area */}
                           <div className={`w-full transition-all duration-200`}>
@@ -1315,6 +1323,7 @@ const simplifiedChordGridData = useMemo(() => {
 
                     {/* Guitar Chords Tab */}
                     {activeTab === 'guitarChords' && (
+                      <div className="tab-panel-enter">
                       <GuitarChordsTab
                         analysisResults={analysisResults}
                         chordGridData={simplifiedChordGridData}
@@ -1328,10 +1337,12 @@ const simplifiedChordGridData = useMemo(() => {
                         sequenceCorrections={sequenceCorrections}
                         segmentationData={segmentationData}
                       />
+                      </div>
                     )}
 
                     {/* Piano Visualizer Tab */}
                     {activeTab === 'pianoVisualizer' && (
+                      <div className="tab-panel-enter">
                       <PianoVisualizerTab
                         analysisResults={analysisResults}
                         chordGridData={simplifiedChordGridData}
@@ -1347,6 +1358,7 @@ const simplifiedChordGridData = useMemo(() => {
                         sheetSageResult={sheetSageResult}
                         showMelodicOverlay={isMelodicTranscriptionPlaybackEnabled && hasSheetSageNotes}
                       />
+                      </div>
                     )}
 
                   </div>

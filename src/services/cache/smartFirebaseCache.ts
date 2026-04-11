@@ -340,3 +340,37 @@ setInterval(() => {
   transcriptionCache.cleanup();
   recentVideosCache.cleanup();
 }, 15 * 60 * 1000); // Cleanup every 15 minutes
+
+/**
+ * Prefetch audio metadata and transcription data for a video ID.
+ * Fires Firebase lookups in the background so the results are
+ * already in-memory when the user starts analysis.
+ */
+export async function prefetchCache(
+  videoId: string,
+  beatModel = 'madmom',
+  chordModel = 'chord-cnn-lstm',
+): Promise<void> {
+  try {
+    const { ensureFirebaseInitialized } = await import('@/config/firebase');
+    await ensureFirebaseInitialized();
+
+    const [audioResult] = await Promise.allSettled([
+      // Warm audio metadata cache
+      import('@/services/firebase/firebaseStorageSimplified').then(async (mod) => {
+        const storage = mod.FirebaseStorageSimplified.getInstance();
+        return storage.getCachedAudioMetadata(videoId);
+      }),
+      // Warm transcription cache
+      import('@/services/firebase/firestoreService').then(async (mod) => {
+        return mod.getTranscription(videoId, beatModel, chordModel);
+      }),
+    ]);
+
+    if (audioResult.status === 'rejected') {
+      console.warn('[prefetchCache] audio metadata prefetch failed:', audioResult.reason);
+    }
+  } catch {
+    // Silently fail — prefetch is best-effort
+  }
+}

@@ -35,6 +35,7 @@ import { useAudioPlayer } from '@/hooks/chord-playback/useAudioPlayer';
 import { useModelState } from '@/hooks/chord-analysis/useModelState';
 import { useAnalyzePageOrchestrator } from '@/hooks/analyze/useAnalyzePageOrchestrator';
 import { useAnalysisUsageTracker } from '@/hooks/analyze/useAnalysisUsageTracker';
+import { useCachePrefetch } from '@/hooks/analyze/useCachePrefetch';
 import { useNavigationHelpers } from '@/hooks/ui/useNavigationHelpers';
 import { transcribeLyricsWithAI as transcribeLyricsWithAIService } from '@/services/audio/audioProcessingExtracted';
 import {
@@ -229,6 +230,9 @@ export default function YouTubeVideoAnalyzePage() {
     initialBeatDetector: routeParams.beatModel,
     initialChordDetector: routeParams.chordModel,
   });
+
+  // Phase 1B: Pre-warm Firebase caches as soon as videoId is available
+  useCachePrefetch(videoId, beatDetector, chordDetector);
 
   useEffect(() => {
   }, [beatDetector, chordDetector, routeParams.autoStart, routeParams.beatModel, routeParams.chordModel, videoId]);
@@ -1180,9 +1184,8 @@ export default function YouTubeVideoAnalyzePage() {
     uiStore.initializeOriginalKey(noteName);
     uiStore.initializeFirebaseAudioAvailable(!!audioProcessingState.audioUrl);
 
-    // Initialize PlaybackStore
+    // Infrequent playback state — only changes on play/pause, load, or rate change
     playbackStore.setIsPlaying(isPlaying);
-    playbackStore.setCurrentTime(currentTime);
     playbackStore.setDuration(duration);
     playbackStore.setPlaybackRate(playbackRate);
     playbackStore.setYoutubePlayer(youtubePlayer);
@@ -1199,9 +1202,15 @@ export default function YouTubeVideoAnalyzePage() {
     lyrics, showLyrics, hasCachedLyrics, isTranscribingLyrics, lyricsError,
     videoTitle, showSegmentation,
     isChatbotOpen, isLyricsPanelOpen,
-    isPlaying, currentTime, duration, playbackRate, youtubePlayer,
+    isPlaying, duration, playbackRate, youtubePlayer,
     isVideoMinimized, isFollowModeEnabled, audioRef
   ]);
+
+  // Phase 1C: Separate high-frequency playback sync — keeps the fast path lightweight
+  // instead of re-running all analysis/UI store setters on every time update tick
+  useEffect(() => {
+    usePlaybackStore.getState().setCurrentTime(currentTime);
+  }, [currentTime]);
 
   return (
     <div className="relative min-h-screen bg-background dark:bg-slate-900">
@@ -1346,7 +1355,7 @@ export default function YouTubeVideoAnalyzePage() {
 
                     <div className="tab-content">
                       {activeTab === 'beatChordMap' && (
-                        <div>
+                        <div className="tab-panel-enter">
                           <ChordGridContainer
                             chordGridData={simplifiedChordGridData}
                             isChatbotOpen={isChatbotOpen}
@@ -1378,6 +1387,7 @@ export default function YouTubeVideoAnalyzePage() {
                       )}
 
                       {activeTab === 'guitarChords' && (
+                        <div className="tab-panel-enter">
                         <GuitarChordsTab
                           chordGridData={simplifiedChordGridData}
                           isChatbotOpen={isChatbotOpen}
@@ -1386,9 +1396,11 @@ export default function YouTubeVideoAnalyzePage() {
                           sequenceCorrections={simplifiedSequenceCorrections}
                           segmentationData={segmentationData}
                         />
+                        </div>
                       )}
 
                       {activeTab === 'pianoVisualizer' && (
+                        <div className="tab-panel-enter">
                         <PianoVisualizerTab
                           analysisResults={analysisResults}
                           chordGridData={simplifiedChordGridData}
@@ -1403,6 +1415,7 @@ export default function YouTubeVideoAnalyzePage() {
                           sheetSageResult={sheetSageResult}
                           showMelodicOverlay={isMelodicTranscriptionPlaybackEnabled && hasSheetSageNotes}
                         />
+                        </div>
                       )}
 
                     </div>
