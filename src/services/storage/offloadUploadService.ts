@@ -177,6 +177,9 @@ class OffloadUploadService {
       }
 
       const storage = await getStorageInstance();
+      if (!storage) {
+        throw new Error('Firebase Storage not available - bucket may not be provisioned');
+      }
 
       const timestamp = Date.now();
       const sanitizedName = audioFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
