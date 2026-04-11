@@ -588,9 +588,9 @@ export default function LocalAudioAnalyzePage() {
     try {
       // Start processing context
       startProcessing();
-      setStage('chord-recognition');
+      setStage('beat-detection');
       setProgress(0);
-      setStatusMessage('Recognizing chords and synchronizing with beats...');
+      setStatusMessage('Analyzing beat patterns and timing...');
 
       // Use existing object URL from audio element or create new one (track and cleanup)
       let audioUrl = audioRef.current?.src;
@@ -616,13 +616,6 @@ export default function LocalAudioAnalyzePage() {
         setDuration(audioRef.current.duration);
       }
 
-      // Update to beat detection stage after duration is available
-      stageTimeoutRef.current = setTimeout(() => {
-        setStage('beat-detection');
-        // Don't set progress here - let ProcessingStatusBanner calculate it
-        setStatusMessage('Analyzing beat patterns and timing...');
-      }, 500); // Reduced delay since we now have duration
-
       setAudioProcessingState(prev => ({
         ...prev,
         isExtracted: true,
@@ -634,12 +627,6 @@ export default function LocalAudioAnalyzePage() {
       // Start chord and beat analysis with selected detectors using original File object
       // This avoids the 10x size bloat from AudioBuffer conversion (3.6MB → 41.7MB)
       const results = await analyzeAudioWithRateLimit(audioFile, beatDetector, chordDetector);
-
-      // FIXED: Clear the stage timeout to prevent it from overriding completion
-      if (stageTimeoutRef.current) {
-        clearTimeout(stageTimeoutRef.current);
-        stageTimeoutRef.current = null;
-      }
 
       // Store results
       setAnalysisResults(results);

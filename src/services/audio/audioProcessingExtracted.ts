@@ -220,23 +220,13 @@ export const handleAudioAnalysis = async (deps: AudioProcessingServiceDependenci
   }
 
   // No cached results found, proceed with new analysis
-  // console.log('🔄 Starting new audio analysis...');
-
-  let stageTimeout: NodeJS.Timeout | null = null;
 
   try {
     // Start processing context for new analysis
     processingContext.startProcessing();
-    processingContext.setStage('chord-recognition');
+    processingContext.setStage('beat-detection');
     processingContext.setProgress(0);
-    processingContext.setStatusMessage('Recognizing chords and synchronizing with beats...');
-
-    // Update to beat detection stage after a brief delay
-    stageTimeout = setTimeout(() => {
-      processingContext.setStage('beat-detection');
-      processingContext.setProgress(50);
-      processingContext.setStatusMessage('Analyzing beat patterns and timing...');
-    }, 1000);
+    processingContext.setStatusMessage('Analyzing beat patterns and timing...');
 
     // Call the audio processing service with current model values
     const results = await analyzeAudioFromService(
@@ -262,24 +252,12 @@ export const handleAudioAnalysis = async (deps: AudioProcessingServiceDependenci
       // console.log(`🎵 Updated duration from analysis results: ${results.audioDuration.toFixed(1)} seconds`);
     }
 
-    // FIXED: Clear the stage timeout to prevent it from overriding completion
-    if (stageTimeout) {
-      clearTimeout(stageTimeout);
-      stageTimeout = null;
-    }
-
     // Update processing context for completion
     processingContext.completeProcessing();
 
     return results;
   } catch (error) {
     console.error('Audio analysis failed:', error);
-
-    // Clear timeout on error too
-    if (stageTimeout) {
-      clearTimeout(stageTimeout);
-      stageTimeout = null;
-    }
 
     // Update processing context for error
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
