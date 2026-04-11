@@ -36,6 +36,7 @@ const LyricsPanel: React.FC<LyricsPanelProps> = React.memo(({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchForSynced, setSearchForSynced] = useState(true);
   const [displayMode, setDisplayMode] = useState<'sync' | 'static'>('sync');
+  const [lyricsOffsetMs, setLyricsOffsetMs] = useState(300); // ms to delay lyrics (positive = lyrics wait longer)
 
   const lyricsContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -100,9 +101,10 @@ const LyricsPanel: React.FC<LyricsPanelProps> = React.memo(({
   const hasSynced = lrclibData?.has_synchronized || enhancedLyricsData?.has_synchronized;
   const syncOn = hasSynced ? displayMode === 'sync' : searchForSynced;
 
+  const adjustedTime = currentTime - lyricsOffsetMs / 1000;
   const currentLyricsInfo = (() => {
-    if (enhancedLyricsData?.synchronized_lyrics) return getCurrentLyricsLine(enhancedLyricsData.synchronized_lyrics, currentTime);
-    if (lrclibData?.synchronized_lyrics) return getCurrentLyricsLine(lrclibData.synchronized_lyrics, currentTime);
+    if (enhancedLyricsData?.synchronized_lyrics) return getCurrentLyricsLine(enhancedLyricsData.synchronized_lyrics, adjustedTime);
+    if (lrclibData?.synchronized_lyrics) return getCurrentLyricsLine(lrclibData.synchronized_lyrics, adjustedTime);
     return { currentIndex: -1 };
   })();
   const syncedLyrics = enhancedLyricsData?.synchronized_lyrics || lrclibData?.synchronized_lyrics;
@@ -262,6 +264,23 @@ const LyricsPanel: React.FC<LyricsPanelProps> = React.memo(({
                   >
                     Sync: {syncOn ? 'On' : 'Off'}
                   </button>
+                  {hasSynced && displayMode === 'sync' && (
+                    <div className="flex items-center gap-0.5">
+                      <button
+                        onClick={() => setLyricsOffsetMs(prev => Math.max(-2000, prev - 100))}
+                        className="px-1.5 py-0.5 text-[11px] rounded-l-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-mono"
+                        title="Lyrics earlier"
+                      >−</button>
+                      <span className="px-1.5 py-0.5 text-[10px] tabular-nums bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 min-w-[3.2rem] text-center" title="Sync offset (positive = delay lyrics)">
+                        {lyricsOffsetMs >= 0 ? '+' : ''}{(lyricsOffsetMs / 1000).toFixed(1)}s
+                      </span>
+                      <button
+                        onClick={() => setLyricsOffsetMs(prev => Math.min(2000, prev + 100))}
+                        className="px-1.5 py-0.5 text-[11px] rounded-r-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-mono"
+                        title="Lyrics later"
+                      >+</button>
+                    </div>
+                  )}
                   <AppTooltip content="Clear lyrics">
                     <button onClick={clearLyrics} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-colors" aria-label="Clear lyrics">
                       <HiTrash className="h-4 w-4" />

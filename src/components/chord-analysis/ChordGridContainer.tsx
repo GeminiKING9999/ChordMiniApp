@@ -4,11 +4,11 @@ import React from 'react';
 import ChordGrid from '@/components/chord-analysis/ChordGrid';
 import { useAnalysisResults, useKeySignature, useIsDetectingKey, useShowCorrectedChords, useChordCorrections } from '@/stores/analysisStore';
 import { useBeatHandlers } from '@/stores/playbackStore';
-import { useRomanNumerals, useShowSegmentation, useIsPitchShiftEnabled, useTargetKey } from '@/stores/uiStore';
+import { useRomanNumerals, useShowSegmentation, useIsPitchShiftEnabled, useTargetKey, useGuitarCapoFret } from '@/stores/uiStore';
 import { useResolvedChordDisplayData } from '@/hooks/chord-analysis/useResolvedChordDisplayData';
 import { AnalysisResult } from '@/services/chord-analysis/chordRecognitionService';
 import { SegmentationResult } from '@/types/chatbotTypes';
-import { transposeChord } from '@/utils/chordTransposition';
+import { transposeChord, calculateTargetKey } from '@/utils/chordTransposition';
 import { chordMappingService } from '@/services/chord-analysis/chordMappingService';
 
 interface AudioMappingItem {
@@ -88,9 +88,12 @@ export const ChordGridContainer: React.FC<ChordGridContainerProps> = React.memo(
   isEditMode = false,
   editedChords = {},
   onChordEdit,
-  capoFret = 0,
+  capoFret,
   capoTargetKey,
 }) => {
+  // Read capo from store as fallback when not passed as prop
+  const storeCapoFret = useGuitarCapoFret();
+  const effectiveCapoFret = capoFret ?? storeCapoFret;
   // PERFORMANCE OPTIMIZATION: Memoize stable props to prevent unnecessary re-renders
   // Only recalculate when the actual data changes, not on every render
   // Use Zustand selectors for automatic optimization
@@ -144,11 +147,16 @@ export const ChordGridContainer: React.FC<ChordGridContainerProps> = React.memo(
       displayKey = quality ? `${targetKey} ${quality}` : targetKey;
     }
 
+    // Compute target key for capo transposition (use prop if given, else derive from store capo)
+    const effectiveCapoTargetKey = capoTargetKey ?? (
+      effectiveCapoFret > 0 ? calculateTargetKey(displayKey || 'C', -effectiveCapoFret) : undefined
+    );
+
     const transformedChords = effectiveChordGridData.chords.map(chord => {
       if (!chord || chord === 'N.C.' || chord === 'N' || chord === 'N/C' || chord === 'NC') return chord;
-      if (capoFret === 0) return chord;
+      if (effectiveCapoFret === 0) return chord;
       
-      const rawShape = transposeChord(chord, -capoFret, capoTargetKey || displayKey || 'C');
+      const rawShape = transposeChord(chord, -effectiveCapoFret, effectiveCapoTargetKey || displayKey || 'C');
       return chordMappingService.getPreferredDiagramChordName(rawShape);
     });
 
@@ -201,8 +209,9 @@ export const ChordGridContainer: React.FC<ChordGridContainerProps> = React.memo(
     effectiveShowCorrectedChords,
     effectiveChordCorrections,
     effectiveSequenceCorrections,
-    capoFret,
+    effectiveCapoFret,
     capoTargetKey,
+    storeCapoFret,
   ]);
 
   // Get click handler from Zustand store

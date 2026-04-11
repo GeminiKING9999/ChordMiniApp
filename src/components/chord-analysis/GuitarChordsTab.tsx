@@ -621,7 +621,7 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
       </div>
 
       {/* Guitar Chord Diagrams Section */}
-      <div className="chord-diagrams-section relative">
+      <div className="chord-diagrams-section relative backdrop-blur-md bg-white/50 dark:bg-slate-900/60 rounded-xl border border-white/20 dark:border-white/8">
         {isLoadingChords && viewMode === 'animated' && (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
