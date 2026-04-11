@@ -74,6 +74,7 @@ ui-debug.log
 .runtimeconfig.json
 serviceAccountKey.json
 firebase-adminsdk.json
+*firebase-adminsdk*.json
 
 # PWA
 **/public/workbox-*.js
