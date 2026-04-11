@@ -56,16 +56,15 @@ async function initializeFirebase(): Promise<void> {
         ? await getFirebaseConfig()  // Client-side: load from /api/config
         : getFirebaseConfigSync();    // Server-side: use process.env
 
-      // Validate configuration
+      // Validate configuration - storageBucket is optional (Storage may not be provisioned)
       const hasRequiredConfig =
         !!firebaseConfig.apiKey &&
         !!firebaseConfig.authDomain &&
-        !!firebaseConfig.projectId &&
-        !!firebaseConfig.storageBucket;
+        !!firebaseConfig.projectId;
 
       if (!hasRequiredConfig) {
         console.warn('Missing required Firebase configuration. Firebase will not be initialized.');
-        console.warn('Required variables: NEXT_PUBLIC_FIREBASE_API_KEY, NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN, NEXT_PUBLIC_FIREBASE_PROJECT_ID, NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET');
+        console.warn('Required variables: NEXT_PUBLIC_FIREBASE_API_KEY, NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN, NEXT_PUBLIC_FIREBASE_PROJECT_ID');
         return;
       }
 
@@ -79,7 +78,17 @@ async function initializeFirebase(): Promise<void> {
       }
 
       db = getFirestore(app);
-      storage = getStorage(app);
+      // Only initialize Storage if storageBucket is configured AND provisioned
+      if (firebaseConfig.storageBucket) {
+        try {
+          storage = getStorage(app);
+        } catch {
+          console.warn('Firebase Storage initialization skipped - bucket may not be provisioned');
+          storage = null;
+        }
+      } else {
+        storage = null;
+      }
       auth = getAuth(app);
 
       isInitialized = true;
@@ -418,11 +427,8 @@ export async function getFirestoreInstance(): Promise<Firestore> {
  * Get Storage instance (ensures Firebase is initialized)
  * Compatible with firebase-lazy.ts getStorageInstance()
  */
-export async function getStorageInstance(): Promise<FirebaseStorage> {
+export async function getStorageInstance(): Promise<FirebaseStorage | null> {
   await ensureFirebaseInitialized();
-  if (!storage) {
-    throw new Error('Storage initialization failed - storage is null after initialization');
-  }
   return storage;
 }
 
