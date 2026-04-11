@@ -1,0 +1,87 @@
+# ChordMini Seamlessness — Task Tracker
+
+## Workflow Per Phase
+1. Implement changes
+2. Run `npm run test` — must pass
+3. Manual smoke test in browser
+4. `git add . && git commit -m "..."` 
+5. `git push`
+6. Move to next phase
+
+---
+
+## Phase 1 — Immediate Responsiveness ✅ Priority: NOW
+
+- `[ ]` **1A** — Pre-warm dynamic imports on idle after analysis completes
+  - `[ ]` Add `requestIdleCallback` block after `completeProcessing()` in `processAudioFile`
+  - `[ ]` Pre-import PianoVisualizerTab, GuitarChordsTab, ChordGridContainer, LyricsSection
+- `[ ]` **1B** — Firebase cache warm-up on page mount (YouTube flow)
+  - `[ ]` Export `prefetchCache(videoId)` from `smartFirebaseCache.ts`
+  - `[ ]` Create `src/hooks/analyze/useCachePrefetch.ts`
+- `[ ]` **1C** — Reduce `timeupdate` React re-render pressure
+  - `[ ]` Replace `setCurrentTime` in `handleTimeUpdate` with ref-only update
+  - `[ ]` Add 10 Hz `setInterval` for scrubber display-only `displayTime` state
+- `[ ]` **1D** — Stabilize `simplifiedChordGridData` memo
+  - `[ ]` Add stable chord-string key to `useMemo` for `simplifyChordArray`
+- `[ ]` Run `npm run test`
+- `[ ]` Git commit + push: `"perf: phase 1 - dynamic import pre-warming, timeupdate throttle, memo stability"`
+
+---
+
+## Phase 2 — State Architecture Tightening ⚠️ Medium Risk
+
+- `[ ]` **2A** — Eliminate duplicate `currentTime` / `isPlaying` / `duration` state
+  - `[ ]` Remove local `useState` for these in `page.tsx`
+  - `[ ]` Wire `<audio>` events to dispatch to `playbackStore` directly
+- `[ ]` **2B** — Consolidate `currentBeatIndex` tracking
+  - `[ ]` Remove local `currentBeatIndexRef` + `useState`
+  - `[ ]` Drive from `useCurrentBeatIndex()` store selector
+- `[ ]` Run `npm run test` + Playwright E2E
+- `[ ]` Git commit + push: `"refactor: phase 2 - single source of truth for playback state"`
+
+---
+
+## Phase 3 — Pipeline Parallelism 🚀 Large Speed Gain
+
+- `[ ]` **3A** — Parallelize post-analysis tasks (key detection + SheetSage + lyrics)
+  - `[ ]` Replace sequential awaits with `Promise.allSettled()`
+- `[ ]` **3B** — Optimistic UI: show chord grid before key detection finishes
+  - `[ ]` Decouple chord grid render from `isDetectingKey` gate
+  - `[ ]` Add "Detecting key..." badge to UtilityBar
+- `[ ]` Run `npm run test`
+- `[ ]` Git commit + push: `"perf: phase 3 - parallel post-analysis pipeline, optimistic chord grid"`
+
+---
+
+## Phase 4 — Canvas & Animation Polish 🎨
+
+- `[ ]` **4A** — Web Worker for `generateAllInstrumentVisualNotes`
+  - `[ ]` Create `src/workers/instrumentNoteWorker.ts`
+  - `[ ]` Wire Comlink bridge in `FallingNotesCanvas`
+- `[ ]` **4B** — Passive scroll events on `ScrollingChordStrip`
+  - `[ ]` Audit + add `{ passive: true }` to all scroll listeners
+  - `[ ]` Add `will-change: transform` hint
+- `[ ]` **4C** — Offscreen canvas for glow effect
+  - `[ ]` Batch `shadowBlur` onto backing canvas, composite once per frame
+- `[ ]` Run `npm run test`
+- `[ ]` Git commit + push: `"perf: phase 4 - canvas worker, passive scroll, glow optimization"`
+
+---
+
+## Phase 5 — Loading Polish ✨
+
+- `[ ]` **5A** — Framer Motion fade-in for dynamic tab panels
+  - `[ ]` Wrap ChordGridContainer, PianoVisualizerTab, GuitarChordsTab in `motion.div`
+- `[ ]` **5B** — Event-driven processing status stages
+  - `[ ]` Remove `setTimeout 500ms` stage hack
+  - `[ ]` Add `onProgress` callback to `analyzeAudioWithRateLimit`
+- `[ ]` Run `npm run test`
+- `[ ]` Git commit + push: `"polish: phase 5 - framer motion transitions, event-driven progress"`
+
+---
+
+## Phase 6 — Local Storage & History (Future)
+
+- `[ ]` **6A** — IndexedDB analysis history store + History page
+- `[ ]` **6B** — Configurable save location via File System Access API
+- `[ ]` **6C** — Offline audio cache with drive selector in Settings

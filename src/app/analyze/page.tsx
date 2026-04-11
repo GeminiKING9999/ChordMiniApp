@@ -108,6 +108,10 @@ export default function LocalAudioAnalyzePage() {
   const [lyricSearchArtist, setLyricSearchArtist] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
+  // Phase 1C: Precision time ref (updated every timeupdate tick, bypasses React render)
+  const currentTimeRef = useRef(0);
+  // Phase 1C: Throttle React state updates to ≤10 Hz to reduce re-render cascade
+  const lastDisplayUpdateRef = useRef(0);
 
   const { lyrics, completeLyricsTranscription } = useLyricsState();
   const {
@@ -658,6 +662,17 @@ export default function LocalAudioAnalyzePage() {
       setStatusMessage('Analysis complete!');
       completeProcessing();
 
+      // Phase 1A: Pre-warm remaining tab chunks on idle so switching tabs is instant
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        (window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(() => {
+          void import('@/components/piano-visualizer/PianoVisualizerTab');
+          void import('@/components/chord-analysis/GuitarChordsTab');
+          void import('@/components/chord-analysis/ChordGridContainer');
+          void import('@/components/lyrics/LyricsSection');
+          void import('@/components/chatbot/ChatbotInterface');
+        });
+      }
+
       // Analysis completed successfully
     } catch (error) {
       console.error('Error in audio processing:', error);
@@ -738,7 +753,14 @@ export default function LocalAudioAnalyzePage() {
       setIsPlaying(false);
     };
     const handleTimeUpdate = () => {
-      if (audioElement) {
+      if (!audioElement) return;
+      // Phase 1C: Always update ref for any consumer that reads time without React state
+      currentTimeRef.current = audioElement.currentTime;
+      // Throttle React state to ≤10 Hz — reduces the full re-render + Zustand sync cascade
+      // from firing on every browser timeupdate tick to at most once per 100ms
+      const now = performance.now();
+      if (now - lastDisplayUpdateRef.current >= 100) {
+        lastDisplayUpdateRef.current = now;
         setCurrentTime(audioElement.currentTime);
       }
     };
@@ -831,6 +853,13 @@ export default function LocalAudioAnalyzePage() {
 
 // Apply optional chord simplification (UI toggle)
 const simplifyChords = useUIStore((state) => state.simplifyChords);
+// Phase 1D: Use a stable string key so this memo only recomputes when chords actually change,
+// not on every render where chordGridData is a new object reference with the same content.
+const chordArrayKey = useMemo(
+  () => (chordGridData?.chords || []).join('|'),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [chordGridData?.chords]
+);
 const simplifiedChordGridData = useMemo(() => {
   if (!chordGridData) return chordGridData;
   let processedChords = chordGridData.chords || [];
@@ -838,7 +867,9 @@ const simplifiedChordGridData = useMemo(() => {
     processedChords = simplifyChordArray(processedChords);
   }
   return { ...chordGridData, chords: processedChords } as typeof chordGridData;
-}, [chordGridData, simplifyChords]);
+  // chordArrayKey is the stable dep — avoids recompute when reference changes but content doesn't
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [chordArrayKey, simplifyChords]);
 
   // Beat animation tracking for HTML audio elements
   useEffect(() => {

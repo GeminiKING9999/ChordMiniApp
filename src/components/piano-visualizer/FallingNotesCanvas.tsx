@@ -288,6 +288,12 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
     const activeNotes = new Set<number>();
     const activeColors = new Map<number, string>();
 
+    // Phase 4C: Collect active-note rects for a single batched glow pass.
+    // Applying shadowBlur per-note is O(n) expensive shadow rasterizations.
+    // Batching into one pass reduces it to O(1) per frame.
+    type GlowRect = { x: number; y: number; w: number; h: number; color: string };
+    const glowRects: GlowRect[] = [];
+
     // roundRect with fallback for older browsers that lack the method
     const safeRoundRect = (
       c: CanvasRenderingContext2D,
@@ -301,7 +307,7 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
       }
     };
 
-    // Helper to draw a single note rectangle
+    // Helper to draw a single note rectangle (glow batched separately — see below)
     const drawNote = (
       noteX: number, noteW: number, drawTop: number, drawHeight: number,
       noteColor: string, isActive: boolean, opacity: number,
@@ -310,18 +316,10 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
       ctx.globalAlpha = opacity;
       const radius = Math.min(3, drawHeight / 2, noteW / 2);
 
-      if (isActive) {
-        ctx.shadowColor = noteColor;
-        ctx.shadowBlur = 8;
-      }
-
       ctx.fillStyle = noteColor;
       ctx.beginPath();
       safeRoundRect(ctx, noteX, drawTop, noteW, drawHeight, radius);
       ctx.fill();
-
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
 
       // Highlight on top edge
       if (drawHeight > 6) {
@@ -339,6 +337,11 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(labelText.substring(0, 4), noteX + noteW / 2, drawTop + drawHeight / 2);
+      }
+
+      // Phase 4C: Queue active note for the single batched glow pass below.
+      if (isActive) {
+        glowRects.push({ x: noteX, y: drawTop, w: noteW, h: drawHeight, color: noteColor });
       }
 
       ctx.globalAlpha = 1.0;
@@ -433,6 +436,31 @@ export const FallingNotesCanvas: React.FC<FallingNotesCanvasProps> = React.memo(
       }
 
       drawNote(noteX, noteW, geom.drawTop, geom.drawHeight, note.color, geom.isActive, geom.opacity, note.labelText);
+    }
+
+    // Phase 4C: Batched glow pass — one shadowBlur context state for ALL active notes.
+    // Groups by color to minimize context switches; composites with 'lighter' for additive glow.
+    if (glowRects.length > 0) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.shadowBlur = 12;
+      ctx.globalAlpha = 0.55;
+      // Group by color to minimize shadowColor changes
+      const byColor = new Map<string, GlowRect[]>();
+      for (const r of glowRects) {
+        const list = byColor.get(r.color);
+        if (list) list.push(r); else byColor.set(r.color, [r]);
+      }
+      for (const [color, rects] of byColor) {
+        ctx.shadowColor = color;
+        ctx.fillStyle = color;
+        for (const r of rects) {
+          ctx.beginPath();
+          ctx.rect(r.x, r.y, r.w, r.h);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
     }
 
     ctx.restore();
