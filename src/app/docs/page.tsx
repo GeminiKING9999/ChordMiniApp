@@ -4,21 +4,16 @@
 import { useEffect, useState } from 'react';
 import Navigation from '@/components/common/Navigation';
 import { isDevelopmentEnvironment } from '@/utils/modelFiltering';
-import { CodeBlock } from '@/components/common/CodeBlock';
 import { useTheme } from '@/contexts/ThemeContext';
 
 import {
   FiActivity,
   FiCpu,
-  FiLink,
   FiFileText,
-  FiCheckCircle,
-  FiExternalLink,
-  FiCode,
   FiServer,
   FiZap,
-  FiAlertCircle,
-  FiInfo
+  FiInfo,
+  FiMusic
 } from 'react-icons/fi';
 import { Card, CardBody, Chip } from '@heroui/react';
 
@@ -79,26 +74,14 @@ const ModelCard = ({
 
 export default function DocsPage() {
   const [activeSection, setActiveSection] = useState<string>('welcome');
-  // Consume theme to toggle a CSS class for docs without referencing the value directly
   const { theme } = useTheme();
-  // no-op read to satisfy linter while keeping reactive subscription
   void theme;
-
-  // Use environment variable for backend URL (supports runtime configuration)
-  // Fallback to localhost:5001 for local development
-  const localEndpoint = 'http://localhost:5001';
 
   useEffect(() => {
     const sectionIds = [
       'welcome',
-      'getting-started',
-      'authentication',
-      'rate-limits',
+      'capabilities',
       'models',
-      'endpoints',
-      'examples',
-      'sample-responses',
-      'status'
     ];
 
     const observer = new IntersectionObserver(
@@ -110,7 +93,7 @@ export default function DocsPage() {
         });
       },
       {
-        rootMargin: '-20% 0px -80% 0px' // Adjusted for better section tracking
+        rootMargin: '-20% 0px -80% 0px'
       }
     );
 
@@ -129,17 +112,6 @@ export default function DocsPage() {
         : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-[#F5EFE4] dark:hover:bg-gray-800'
     }`;
 
-  const infoCardClass = (type: 'info' | 'warning' | 'success') => {
-    switch (type) {
-      case 'info':
-        return 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 dark:border-blue-400';
-      case 'warning':
-        return 'bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 dark:border-amber-400';
-      case 'success':
-        return 'bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 dark:border-green-400';
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background dark:bg-content-bg transition-colors duration-300">
       <Navigation />
@@ -151,49 +123,21 @@ export default function DocsPage() {
               <nav className="space-y-6 bg-[#FAF6EE] dark:bg-content-bg">
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                    Welcome
+                    Overview
                   </h3>
                   <a href="#welcome" className={navItemClasses('welcome')}>
-                    <FiInfo className="w-4 h-4" /> Overview
+                    <FiInfo className="w-4 h-4" /> About
+                  </a>
+                  <a href="#capabilities" className={navItemClasses('capabilities')}>
+                    <FiZap className="w-4 h-4" /> Capabilities
                   </a>
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                    Getting Started
-                  </h3>
-                  <a href="#getting-started" className={navItemClasses('getting-started')}>
-                    <FiZap className="w-4 h-4" /> Quick Start
-                  </a>
-                  <a href="#authentication" className={navItemClasses('authentication')}>
-                    <FiCheckCircle className="w-4 h-4" /> Authentication
-                  </a>
-                  <a href="#rate-limits" className={navItemClasses('rate-limits')}>
-                    <FiActivity className="w-4 h-4" /> Rate Limits
-                  </a>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                    API Reference
+                    Technology
                   </h3>
                   <a href="#models" className={navItemClasses('models')}>
                     <FiCpu className="w-4 h-4" /> Models
-                  </a>
-                  <a href="#endpoints" className={navItemClasses('endpoints')}>
-                    <FiLink className="w-4 h-4" /> Endpoints
-                  </a>
-                  <a href="#examples" className={navItemClasses('examples')}>
-                    <FiCode className="w-4 h-4" /> Examples
-                  </a>
-                  <a href="#sample-responses" className={navItemClasses('sample-responses')}>
-                    <FiFileText className="w-4 h-4" /> Responses
-                  </a>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                    Support
-                  </h3>
-                  <a href="#status" className={navItemClasses('status')}>
-                    <FiServer className="w-4 h-4" /> Status
                   </a>
                 </div>
               </nav>
@@ -207,27 +151,26 @@ export default function DocsPage() {
               <section id="welcome" className="scroll-mt-8">
                 <div className="text-center space-y-4">
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/20 mx-auto">
-                    <FiCode className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                    <FiMusic className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                   </div>
                   <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                    Chord Reaper API Documentation
+                    Chord Reaper
                   </h1>
                   <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                    A comprehensive guide to using our audio analysis API, covering beat detection, chord recognition, and more.
+                    AI-powered audio analysis for beat detection, chord recognition, and lyrics synchronization. Powered by state-of-the-art machine learning models.
                   </p>
                 </div>
               </section>
 
-              {/* Getting Started */}
-              <section id="getting-started" className="scroll-mt-8">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Getting Started</h2>
+              {/* Capabilities */}
+              <section id="capabilities" className="scroll-mt-8">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Capabilities</h2>
                 <div className="prose prose-gray dark:prose-invert max-w-none mb-8">
                   <p>
-                    The Chord Reaper API provides powerful audio analysis capabilities with no authentication required. Start making requests immediately to analyze audio files and extract musical information.
+                    Chord Reaper analyzes audio to extract musical information using advanced deep learning models.
                   </p>
                 </div>
 
-                {/* Feature Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
                   <Card shadow="sm" className="hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700">
                     <CardBody>
@@ -236,7 +179,7 @@ export default function DocsPage() {
                         <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Beat Detection</h3>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Identify beat positions and downbeats using advanced ML models.
+                        Identify beat positions, downbeats, BPM, and time signatures using neural network models.
                       </p>
                     </CardBody>
                   </Card>
@@ -247,7 +190,7 @@ export default function DocsPage() {
                         <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Chord Recognition</h3>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Recognize chord progressions with multiple model options.
+                        Recognize chord progressions with 301 chord labels using CNN-LSTM architecture.
                       </p>
                     </CardBody>
                   </Card>
@@ -255,10 +198,10 @@ export default function DocsPage() {
                     <CardBody>
                       <div className="flex items-center gap-4 mb-2">
                         <FiFileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                        <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Lyrics Fetching</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Lyrics Synchronization</h3>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Retrieve synchronized lyrics from LRClib database.
+                        Fetch and display time-synced lyrics from LRClib and Genius databases.
                       </p>
                     </CardBody>
                   </Card>
@@ -266,110 +209,22 @@ export default function DocsPage() {
                     <CardBody>
                       <div className="flex items-center gap-4 mb-2">
                         <FiServer className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                        <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Model Info</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-lg">Song Structure</h3>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Get details about available models and capabilities.
+                        Segment songs into structural sections (verse, chorus, bridge) using SongFormer.
                       </p>
                     </CardBody>
                   </Card>
                 </div>
               </section>
 
-              {/* Authentication */}
-              <section id="authentication" className="scroll-mt-8">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Authentication</h2>
-                <div className={`rounded-lg p-6 mb-6 ${infoCardClass('success')}`}>
-                  <div className="flex items-start gap-3">
-                    <FiCheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
-                    <div>
-                      <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2">No API Key Required</h3>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        The Chord Reaper API is currently open and does not require authentication. All endpoints are publicly accessible,
-                        making it easy to get started immediately.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className={`rounded-lg p-6 ${infoCardClass('warning')}`}>
-                  <div className="flex items-start gap-3">
-                    <FiAlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" />
-                    <div>
-                      <h3 className="font-semibold text-amber-900 dark:text-amber-100 mb-2">Future Changes</h3>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        Authentication may be required in future versions. Implement proper error handling for potential `401/403` responses.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Rate Limits */}
-              <section id="rate-limits" className="scroll-mt-8">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Rate Limits</h2>
-                <div className="prose prose-gray dark:prose-invert max-w-none mb-8">
-                  <p>
-                    The Chord Reaper API implements production-grade rate limiting to ensure fair usage and system stability. Rate limits vary by endpoint based on computational requirements.
-                  </p>
-                </div>
-                <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-gray-100 dark:bg-content-bg/50 border-b border-gray-200 dark:border-gray-700">
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Endpoint</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Method</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rate Limit</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reason</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      <tr className="bg-white dark:bg-slate-900">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">/</td>
-                        <td className="px-6 py-4 whitespace-nowrap"><span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">GET</span></td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">30/minute</td>
-                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Health checks, status monitoring</td>
-                      </tr>
-                      <tr className="bg-white dark:bg-slate-900">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">/api/model-info</td>
-                        <td className="px-6 py-4 whitespace-nowrap"><span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">GET</span></td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">20/minute</td>
-                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Information endpoint, moderate usage</td>
-                      </tr>
-                      <tr className="bg-white dark:bg-slate-900">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">/api/detect-beats</td>
-                        <td className="px-6 py-4 whitespace-nowrap"><span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">POST</span></td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-red-600 dark:text-red-400">2/minute</td>
-                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Heavy processing, resource intensive</td>
-                      </tr>
-                      <tr className="bg-white dark:bg-slate-900">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">/api/recognize-chords*</td>
-                        <td className="px-6 py-4 whitespace-nowrap"><span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">POST</span></td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-red-600 dark:text-red-400">2/minute</td>
-                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Heavy processing, ML inference</td>
-                      </tr>
-                      <tr className="bg-white dark:bg-slate-900">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">/api/lrclib-lyrics</td>
-                        <td className="px-6 py-4 whitespace-nowrap"><span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">POST</span></td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">10/minute</td>
-                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Synchronized lyrics with timestamps</td>
-                      </tr>
-                      <tr className="bg-white dark:bg-slate-900">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">/api/genius-lyrics</td>
-                        <td className="px-6 py-4 whitespace-nowrap"><span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">POST</span></td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">10/minute</td>
-                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Genius.com lyrics fetching</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-
               {/* Models */}
               <section id="models" className="scroll-mt-8">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Available Models</h2>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Models & Technology</h2>
                 <div className="prose prose-gray dark:prose-invert max-w-none mb-8">
                   <p>
-                    Chord Reaper provides multiple machine learning models for different audio analysis tasks. Each model is optimized for specific use cases and performance characteristics.
+                    Chord Reaper uses multiple machine learning models, each optimized for specific audio analysis tasks.
                   </p>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Beat Detection Models</h3>
@@ -384,19 +239,19 @@ export default function DocsPage() {
                   <ModelCard
                     status="Operational"
                     title="Beat-Transformer"
-                    description="DL model with 5-channel audio separation, flexible in time signatures, slow processing speed."
+                    description="Deep learning model with 5-channel audio separation, flexible in time signatures, slower processing speed."
                     footer={<><strong>Best for:</strong> Complex mixes, layered instrumentation</>}
                   />
                 </div>
 
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Chord Recognition Models</h3>
-                <div className="grid gap-6">
+                <div className="grid gap-6 mb-8">
                   <ModelCard
                     status="Operational"
                     title="Chord-CNN-LSTM"
                     badgeLabel="Default"
                     description="Convolutional and LSTM neural network for chord recognition with 301 chord labels. Excellent balance of accuracy and performance."
-                    footer={<><strong>Labels:</strong> 301 chord types • <strong>Best for:</strong> General purpose chord recognition</>}
+                    footer={<><strong>Labels:</strong> 301 chord types &bull; <strong>Best for:</strong> General purpose chord recognition</>}
                   />
                   {isDevelopmentEnvironment() && (
                     <>
@@ -409,10 +264,10 @@ export default function DocsPage() {
                         description={
                           <>
                             Transformer model with 170 chord labels, supervised learning approach.
-                            <strong className="text-orange-600 dark:text-orange-400"> Development only - requires local repository cloning.</strong>
+                            <strong className="text-orange-600 dark:text-orange-400"> Development only.</strong>
                           </>
                         }
-                        footer={<><strong>Labels:</strong> 170 chord types • <strong>Best for:</strong> Research and development</>}
+                        footer={<><strong>Labels:</strong> 170 chord types &bull; <strong>Best for:</strong> Research and development</>}
                       />
                       <ModelCard
                         status="Degraded"
@@ -423,187 +278,23 @@ export default function DocsPage() {
                         description={
                           <>
                             Transformer model with 170 chord labels, pseudo-label training approach.
-                            <strong className="text-orange-600 dark:text-orange-400"> Development only - requires local repository cloning.</strong>
+                            <strong className="text-orange-600 dark:text-orange-400"> Development only.</strong>
                           </>
                         }
-                        footer={<><strong>Labels:</strong> 170 chord types • <strong>Best for:</strong> Research and development</>}
+                        footer={<><strong>Labels:</strong> 170 chord types &bull; <strong>Best for:</strong> Research and development</>}
                       />
                     </>
                   )}
                 </div>
-              </section>
 
-              {/* API Endpoints */}
-              <section id="endpoints" className="scroll-mt-8">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">API Endpoints</h2>
-                <div className="prose prose-gray dark:prose-invert max-w-none mb-8">
-                  <p>
-                    When running locally, all endpoints are available at: <strong className="font-mono text-gray-900 dark:text-white">{localEndpoint}</strong>
-                  </p>
-                </div>
-                <div className={`rounded-lg p-4 mb-6 ${infoCardClass('info')}`}>
-                  <div className="flex items-start gap-3">
-                    <FiInfo className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-gray-700 dark:text-gray-300">
-                      For remote/production endpoint access, please contact the maintainer. Be mindful of rate limits and usage constraints when testing remotely.
-                    </p>
-                  </div>
-                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Song Structure Analysis</h3>
                 <div className="grid gap-6">
-                  <Card shadow="sm" className="hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900">
-                    <CardBody>
-                      <div className="flex items-center gap-3 mb-4">
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">POST</span>
-                        <span className="font-mono text-sm text-gray-900 dark:text-gray-100">/api/detect-beats</span>
-                      </div>
-                      <p className="text-gray-600 dark:text-gray-400 mb-4">
-                        Analyzes audio file and returns beat timestamps, BPM, and time signature.
-                      </p>
-                      <ul className="text-sm space-y-2">
-                        <li><strong>Parameters:</strong> `file` (audio file), `model` (optional: `beat-transformer`, `madmom`, `auto`)</li>
-                      </ul>
-                    </CardBody>
-                  </Card>
-                  <Card shadow="sm" className="hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900">
-                    <CardBody>
-                      <div className="flex items-center gap-3 mb-4">
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">POST</span>
-                        <span className="font-mono text-sm text-gray-900 dark:text-gray-100">/api/recognize-chords</span>
-                      </div>
-                      <p className="text-gray-600 dark:text-gray-400 mb-4">
-                        Analyzes audio file and returns chord progression with timestamps.
-                      </p>
-                      <ul className="text-sm space-y-2">
-                        <li><strong>Parameters:</strong> `file` (audio file), `model` (optional: `chord-cnn-lstm`)</li>
-                      </ul>
-                    </CardBody>
-                  </Card>
-                </div>
-              </section>
-
-              {/* Examples */}
-              <section id="examples" className="scroll-mt-8">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Usage Examples</h2>
-                <div className="prose prose-gray dark:prose-invert max-w-none mb-8">
-                  <p>
-                    Here are some practical examples of how to use the Chord Reaper API using Javascript and cURL.
-                  </p>
-                </div>
-
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Chord Recognition with Javascript</h3>
-                    <CodeBlock
-                      title="Javascript"
-                      language="javascript"
-                      code={`const formData = new FormData();
-formData.append('file', audioFile);
-formData.append('model', 'chord-cnn-lstm');
-
-const response = await fetch(
-  '${localEndpoint}/api/recognize-chords',
-  {
-    method: 'POST',
-    body: formData
-  }
-);
-
-const result = await response.json();
-console.log(result);`}
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Beat Detection with cURL</h3>
-                    <CodeBlock
-                      title="cURL"
-                      language="bash"
-                      code={`curl -X POST "${localEndpoint}/api/detect-beats" \\
-  -F "file=@your-audio-file.mp3" \\
-  -F "model=beat-transformer"`}
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Chord Recognition with cURL</h3>
-                    <CodeBlock
-                      title="cURL"
-                      language="bash"
-                      code={`curl -X POST "${localEndpoint}/api/recognize-chords" \\
-  -F "file=@your-audio-file.mp3" \\
-  -F "model=chord-cnn-lstm"`}
-                    />
-                  </div>
-                </div>
-              </section>
-
-              {/* Status Page */}
-              <section id="status" className="scroll-mt-8">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">API Status</h2>
-                <div className="prose prose-gray dark:prose-invert max-w-none mb-8">
-                  <p>
-                    Monitor the real-time status of Chord Reaper API services and endpoints.
-                  </p>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6 mb-8">
-                  <Card shadow="sm" className="hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900">
-                    <CardBody>
-                      <div className="flex items-center gap-3 mb-4">
-                        <StatusIcon status="Operational" />
-                        <h3 className="font-semibold text-gray-900 dark:text-white">Backend Services</h3>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
-                          <span>Beat Detection</span>
-                          <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full">Operational</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
-                          <span>Chord Recognition</span>
-                          <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full">Operational</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
-                          <span>Lyrics Services</span>
-                          <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full">Operational</span>
-                        </div>
-                      </div>
-                    </CardBody>
-                  </Card>
-                  <Card shadow="sm" className="hover:shadow-lg transition-all border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900">
-                    <CardBody>
-                      <div className="flex items-center gap-3 mb-4">
-                        <FiServer className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                        <h3 className="font-semibold text-gray-900 dark:text-white">Infrastructure</h3>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
-                          <span>Google Cloud Run</span>
-                          <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full">Online</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
-                          <span>Rate Limiting</span>
-                          <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full">Active</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
-                          <span>CORS Support</span>
-                          <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full">Enabled</span>
-                        </div>
-                      </div>
-                    </CardBody>
-                  </Card>
-                </div>
-                <div className={`rounded-lg p-6 ${infoCardClass('info')}`}>
-                  <div className="flex items-start gap-3">
-                    <FiExternalLink className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-                    <div>
-                      <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Detailed Status Page</h3>
-                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                        For real-time monitoring and detailed service metrics, visit our dedicated status page.
-                      </p>
-                      <a href="/status" className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm transition-colors">
-                        View Status Page
-                        <FiExternalLink className="w-4 h-4" />
-                      </a>
-                    </div>
-                  </div>
+                  <ModelCard
+                    status="Operational"
+                    title="SongFormer"
+                    description="Transformer-based model for song structure segmentation. Identifies verse, chorus, bridge, intro, outro, and other musical sections."
+                    footer={<><strong>Best for:</strong> Structural analysis and section-level song navigation</>}
+                  />
                 </div>
               </section>
             </div>
