@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { FaExpand, FaCompress } from 'react-icons/fa';
 import { MdPictureInPictureAlt } from 'react-icons/md';
@@ -177,13 +177,87 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
     timeSignature,
   });
 
-  // Picture-in-Picture: detach the actual player as a floating overlay (same instance, stays synced)
+  // Picture-in-Picture: detach the actual player as a draggable/resizable floating overlay
   const [isDetached, setIsDetached] = useState(false);
   const isPipActive = isDetached;
+  const [pipPos, setPipPos] = useState({ x: 0, y: 0 });
+  const [pipSize, setPipSize] = useState({ w: 640, h: 360 });
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const resizeRef = useRef<{ startX: number; startY: number; origW: number; origH: number } | null>(null);
+  const pipContainerRef = useRef<HTMLDivElement>(null);
 
-  const handlePictureInPicture = () => {
-    setIsDetached(prev => !prev);
-  };
+  const handlePictureInPicture = useCallback(() => {
+    setIsDetached(prev => {
+      if (!prev) {
+        // Detaching — center the floating video
+        const w = Math.min(640, window.innerWidth - 32);
+        const h = Math.round(w * 9 / 16);
+        setPipSize({ w, h });
+        setPipPos({ x: window.innerWidth - w - 16, y: window.innerHeight - h - 16 });
+      }
+      return !prev;
+    });
+  }, []);
+
+  // Drag handlers — no deps so the closure captures the ref, not stale state
+  const onDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setPipPos(cur => {
+      dragRef.current = { startX: e.clientX, startY: e.clientY, origX: cur.x, origY: cur.y };
+      return cur;
+    });
+    const onMove = (ev: MouseEvent) => {
+      if (!dragRef.current) return;
+      const dx = ev.clientX - dragRef.current.startX;
+      const dy = ev.clientY - dragRef.current.startY;
+      setPipPos({ x: dragRef.current.origX + dx, y: dragRef.current.origY + dy });
+    };
+    const onUp = () => {
+      dragRef.current = null;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, []);
+
+  // Resize handlers — no deps so the closure captures the ref, not stale state
+  const onResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPipSize(cur => {
+      resizeRef.current = { startX: e.clientX, startY: e.clientY, origW: cur.w, origH: cur.h };
+      return cur;
+    });
+    const onMove = (ev: MouseEvent) => {
+      if (!resizeRef.current) return;
+      const dw = ev.clientX - resizeRef.current.startX;
+      const dh = ev.clientY - resizeRef.current.startY;
+      const newW = Math.max(320, resizeRef.current.origW + dw);
+      const newH = Math.max(180, resizeRef.current.origH + dh);
+      setPipSize({ w: newW, h: newH });
+    };
+    const onUp = () => {
+      resizeRef.current = null;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, []);
+
+  // Keep pip in bounds on window resize
+  useEffect(() => {
+    if (!isDetached) return;
+    const onResize = () => {
+      setPipPos(prev => ({
+        x: Math.min(prev.x, window.innerWidth - 100),
+        y: Math.min(prev.y, window.innerHeight - 100),
+      }));
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [isDetached]);
 
   // Don't render if no video URLs are available
   if (!youtubeEmbedUrl && !videoUrl) {
@@ -219,16 +293,25 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
   const containerStyles = getContainerStyles();
 
   return (
+    <>
     <div
-      className={`transition-all duration-300 shadow-xl ${
-        positionMode === 'relative'
-          ? 'w-full' // Remove z-index for inline positioning
-          : `z-50 ${isVideoMinimized ? 'w-1/4 md:w-1/5' : 'w-2/3 md:w-1/3'}` // Keep z-index for fixed positioning
+      ref={isDetached ? pipContainerRef : undefined}
+      className={`${isDetached ? '' : 'transition-all duration-300'} ${
+        isDetached
+          ? 'fixed z-[9999] rounded-2xl overflow-hidden ring-2 ring-blue-500/60 shadow-2xl'
+          : `shadow-xl ${
+              positionMode === 'relative'
+                ? 'w-full'
+                : `z-50 ${isVideoMinimized ? 'w-1/4 md:w-1/5' : 'w-2/3 md:w-1/3'}`
+            }`
       }`}
-      style={containerStyles}
+      style={isDetached
+        ? { left: pipPos.x, top: pipPos.y, width: pipSize.w, height: pipSize.h }
+        : containerStyles
+      }
     >
       {/* FIXED: Responsive toggle button container - inline for mobile, absolute for fixed positioning */}
-      {showTopToggles && (
+      {!isDetached && showTopToggles && (
         <div
           className={`${
             positionMode === 'relative'
@@ -322,29 +405,31 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
           </div>
         </div>
       )}
-      {/* Placeholder when video is detached */}
-      {isDetached && (
-        <div className="flex items-center justify-center gap-2 rounded-[20px] border border-dashed border-blue-400/40 bg-blue-950/20 p-8 text-blue-300/70 sm:rounded-[24px]">
-          <MdPictureInPictureAlt className="h-5 w-5" />
-          <span className="text-sm font-medium">Video detached — floating on screen</span>
-          <button
-            onClick={handlePictureInPicture}
-            className="ml-2 rounded-lg bg-blue-600/80 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-blue-500"
-          >
-            Reattach
-          </button>
-        </div>
-      )}
       <div
-        className={`relative overflow-hidden rounded-[20px] border border-white/45 bg-white/20 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.7)] backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/20 sm:rounded-[24px] ${
+        className={`relative overflow-hidden ${
           isDetached
-            ? 'fixed bottom-4 right-4 z-[9999] w-[50vw] min-w-[420px] max-w-[90vw] ring-2 ring-blue-500/50 shadow-2xl'
-            : ''
+            ? 'h-full w-full rounded-2xl bg-black'
+            : 'rounded-[20px] border border-white/45 bg-white/20 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.7)] backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/20 sm:rounded-[24px]'
         }`}
-        style={isDetached ? { resize: 'both', overflow: 'hidden' } : undefined}
       >
+        {/* Drag handle bar — only when detached */}
+        {isDetached && (
+          <div
+            onMouseDown={onDragStart}
+            className="absolute inset-x-0 top-0 z-30 flex h-8 cursor-grab items-center justify-between bg-gradient-to-b from-black/70 to-transparent px-3 active:cursor-grabbing"
+          >
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-white/70 select-none">Drag to move</span>
+            <button
+              onClick={handlePictureInPicture}
+              className="flex items-center gap-1 rounded-md bg-blue-600/90 px-2 py-0.5 text-[10px] font-semibold text-white transition-colors hover:bg-blue-500"
+            >
+              <MdPictureInPictureAlt className="h-3.5 w-3.5" />
+              Reattach
+            </button>
+          </div>
+        )}
         {/* Desktop controls: PiP + shrink/expand */}
-        <div className="absolute right-3 top-3 z-20 hidden md:flex md:items-center md:gap-2">
+        {!isDetached && <div className="absolute right-3 top-3 z-20 hidden md:flex md:items-center md:gap-2">
           <Tooltip
             content={isPipActive ? 'Close detached video' : 'Detach video (Picture-in-Picture)'}
             placement="left"
@@ -399,10 +484,10 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
               </span>
             </button>
           </Tooltip>
-        </div>
+        </div>}
 
         {/* Countdown overlay */}
-        {isCountdownEnabled && isCountingDown && (
+        {!isDetached && isCountdownEnabled && isCountingDown && (
           <div className="absolute inset-0 z-60 flex items-center justify-center bg-black/40 text-white text-4xl font-bold select-none pointer-events-none">
             {countdownDisplay || ''}
           </div>
@@ -410,9 +495,7 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
 
         {/* Video player with mobile collapsible functionality */}
         {(youtubeEmbedUrl || videoUrl) && (
-          <div className="relative">
-
-
+          <div className={isDetached ? 'h-full w-full' : 'relative'}>
             <CollapsibleVideoPlayer
               videoId={videoId}
               isPlaying={isPlaying}
@@ -428,8 +511,17 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
             />
           </div>
         )}
+        {/* Resize handle — only when detached */}
+        {isDetached && (
+          <div
+            onMouseDown={onResizeStart}
+            className="absolute bottom-0 right-0 z-30 h-5 w-5 cursor-nwse-resize"
+            style={{ background: 'linear-gradient(135deg, transparent 50%, rgba(59,130,246,0.7) 50%)' }}
+          />
+        )}
       </div>
     </div>
+    </>
   );
 };
 
