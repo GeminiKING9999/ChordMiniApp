@@ -1,7 +1,13 @@
 const DEFAULT_PYTHON_API_URL = 'http://localhost:5001';
+const DEFAULT_PRODUCTION_PYTHON_API_URL = 'https://chordmini-backend-full-191567167632.us-central1.run.app';
 const DEFAULT_FRONTEND_URL = 'http://localhost:3000';
 const DEFAULT_LOCAL_SONGFORMER_API_URL = 'http://localhost:8080';
 const DEFAULT_LOCAL_SHEETSAGE_API_URL = 'http://localhost:8082';
+
+function hasNonEmptyEnv(name: string): boolean {
+  const value = process.env[name];
+  return typeof value === 'string' && value.length > 0;
+}
 
 function isLocalUrl(candidateUrl: string | undefined): boolean {
   if (!candidateUrl) {
@@ -16,12 +22,32 @@ function isLocalUrl(candidateUrl: string | undefined): boolean {
   }
 }
 
+function isHostedDeployment(): boolean {
+  const vercelEnv = process.env.VERCEL_ENV;
+  if (vercelEnv === 'production' || vercelEnv === 'preview') {
+    return true;
+  }
+
+  const netlifyContext = process.env.CONTEXT;
+  if (process.env.NETLIFY === 'true') {
+    if (netlifyContext === 'dev' || netlifyContext === 'local') {
+      return false;
+    }
+
+    const hostedNetlifyUrl = process.env.URL || process.env.DEPLOY_PRIME_URL || process.env.DEPLOY_URL;
+    return !isLocalUrl(hostedNetlifyUrl) || hasNonEmptyEnv('CONTEXT');
+  }
+
+  return false;
+}
+
 export function getPythonApiUrl(): string {
-  return process.env.PYTHON_API_URL || DEFAULT_PYTHON_API_URL;
+  return process.env.PYTHON_API_URL
+    || (isHostedDeployment() ? DEFAULT_PRODUCTION_PYTHON_API_URL : DEFAULT_PYTHON_API_URL);
 }
 
 export function getSongformerApiUrl(): string {
-  if (process.env.VERCEL_ENV === 'production') {
+  if (isHostedDeployment()) {
     return process.env.SONGFORMER_API_URL || getPythonApiUrl();
   }
 
@@ -32,7 +58,7 @@ export function getSongformerApiUrl(): string {
 }
 
 export function getSheetSageApiUrl(): string {
-  if (process.env.VERCEL_ENV === 'production') {
+  if (isHostedDeployment()) {
     return process.env.SHEETSAGE_API_URL || getPythonApiUrl();
   }
 

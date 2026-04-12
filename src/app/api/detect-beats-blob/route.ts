@@ -4,6 +4,7 @@ import { audioMetadataService } from '@/services/audio/audioMetadataService';
 import { validateBlobUrl } from '@/utils/blobValidation';
 import { getPythonApiUrl } from '@/config/serverBackend';
 import { deleteOffloadUrl } from '@/services/storage/offloadCleanupService';
+import { extractErrorMessageFromText } from '@/utils/httpErrorUtils';
 
 /**
  * API route to detect beats using offload storage URL
@@ -185,7 +186,11 @@ export async function POST(request: NextRequest) {
     // On specific Beat-Transformer load errors, retry with madmom as fallback
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ Backend error: ${response.status} ${response.statusText} - ${errorText}`);
+      const backendErrorMessage = extractErrorMessageFromText(
+        errorText,
+        `Backend processing failed: ${response.status} ${response.statusText}`,
+      );
+      console.error(`❌ Backend error: ${response.status} ${response.statusText} - ${backendErrorMessage}`);
 
       const isCheckpointError = errorText.includes("Can't load save_path") || errorText.includes('Beat Transformer is not available');
       if (detector === 'beat-transformer' && isCheckpointError) {
@@ -198,7 +203,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error: `Backend processing failed: ${response.status} ${response.statusText}`,
-            details: err2
+            details: extractErrorMessageFromText(
+              err2,
+              `Backend processing failed: ${response.status} ${response.statusText}`,
+            )
           },
           { status: response.status }
         );

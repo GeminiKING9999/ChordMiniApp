@@ -7,6 +7,7 @@
 
 import { createSafeTimeoutSignal } from '@/utils/environmentUtils';
 import { isLocalBackend } from '@/utils/backendConfig';
+import { getResponseErrorMessage } from '@/utils/httpErrorUtils';
 
 export interface OffloadUploadResult {
   success: boolean;
@@ -112,8 +113,11 @@ class OffloadUploadService {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(errorData.error || errorData.details || `Backend processing failed: ${response.status}`);
+      const errorMessage = await getResponseErrorMessage(
+        response,
+        `Backend processing failed: ${response.status} ${response.statusText}`,
+      );
+      throw new Error(errorMessage);
     }
 
     return response.json();

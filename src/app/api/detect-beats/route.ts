@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSafeTimeoutSignal } from '@/utils/environmentUtils';
 import { getAudioDurationFromFile } from '@/utils/audioDurationUtils';
 import { getPythonApiUrl } from '@/config/serverBackend';
+import { extractErrorMessageFromText } from '@/utils/httpErrorUtils';
 
 /**
  * Beat Detection API Route
@@ -120,7 +121,11 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       let errorText = await response.text();
-      console.error(`❌ Backend beat detection failed: ${response.status} ${response.statusText} - ${errorText}`);
+      let backendErrorMessage = extractErrorMessageFromText(
+        errorText,
+        `Backend error: ${response.status} ${response.statusText}`,
+      );
+      console.error(`❌ Backend beat detection failed: ${response.status} ${response.statusText} - ${backendErrorMessage}`);
 
       // Retry with madmom if Beat-Transformer checkpoint is unavailable
       const isCheckpointError = errorText.includes("Can't load save_path") || errorText.includes('Beat Transformer is not available');
@@ -142,7 +147,11 @@ export async function POST(request: NextRequest) {
         response = await fetch(targetUrl, { method: 'POST', body: fd, signal: abortSignal });
         if (!response.ok) {
           errorText = await response.text();
-          console.error(`❌ Fallback to madmom also failed: ${response.status} ${response.statusText} - ${errorText}`);
+          backendErrorMessage = extractErrorMessageFromText(
+            errorText,
+            `Backend error: ${response.status} ${response.statusText}`,
+          );
+          console.error(`❌ Fallback to madmom also failed: ${response.status} ${response.statusText} - ${backendErrorMessage}`);
         } else {
           const result = await response.json();
           console.log(`✅ Beat detection successful after fallback to madmom`);
@@ -194,11 +203,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error: 'Beat detection failed',
-            details: `Backend returned 403 Forbidden. This may indicate the Python backend is not running or accessible.`,
+            details: backendErrorMessage,
             suggestion: 'Ensure Python backend is running on the correct port and accessible',
             debugInfo: {
-              backendUrl: `${backendUrl}/api/detect-beats`,
-              errorResponse: errorText,
+              backendUrl: targetUrl,
+              errorResponse: backendErrorMessage,
               responseHeaders: Object.fromEntries(response.headers.entries())
             }
           },
@@ -209,7 +218,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Beat detection failed',
-          details: `Backend error: ${response.status} ${response.statusText}`,
+          details: backendErrorMessage,
           suggestion: 'The audio file may be too large or in an unsupported format. Please try a shorter audio clip or different format.'
         },
         { status: response.status }
