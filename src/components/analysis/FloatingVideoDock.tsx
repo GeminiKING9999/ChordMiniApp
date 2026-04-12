@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { FaExpand, FaCompress } from 'react-icons/fa';
 import { MdPictureInPictureAlt } from 'react-icons/md';
@@ -177,46 +177,12 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
     timeSignature,
   });
 
-  // Picture-in-Picture state
-  const [pipWindow, setPipWindow] = useState<Window | null>(null);
-  const pipCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const currentTimeRef = useRef(currentTime);
-  currentTimeRef.current = currentTime;
-
-  useEffect(() => {
-    return () => {
-      if (pipCheckRef.current) clearInterval(pipCheckRef.current);
-    };
-  }, []);
-
-  const isPipActive = !!(pipWindow && !pipWindow.closed);
+  // Picture-in-Picture: detach the actual player as a floating overlay (same instance, stays synced)
+  const [isDetached, setIsDetached] = useState(false);
+  const isPipActive = isDetached;
 
   const handlePictureInPicture = () => {
-    if (isPipActive) {
-      pipWindow!.close();
-      setPipWindow(null);
-      return;
-    }
-
-    const startTime = Math.floor(currentTimeRef.current);
-    const watchUrl = `https://www.youtube.com/watch?v=${videoId}&t=${startTime}`;
-
-    const win = window.open(
-      watchUrl,
-      'chord-reaper-pip',
-      'width=960,height=540,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=no'
-    );
-
-    if (win) {
-      if (pipCheckRef.current) clearInterval(pipCheckRef.current);
-      pipCheckRef.current = setInterval(() => {
-        if (!win || win.closed) {
-          if (pipCheckRef.current) clearInterval(pipCheckRef.current);
-          setPipWindow(null);
-        }
-      }, 1000);
-      setPipWindow(win);
-    }
+    setIsDetached(prev => !prev);
   };
 
   // Don't render if no video URLs are available
@@ -356,7 +322,27 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
           </div>
         </div>
       )}
-      <div className="relative overflow-hidden rounded-[20px] border border-white/45 bg-white/20 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.7)] backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/20 sm:rounded-[24px]">
+      {/* Placeholder when video is detached */}
+      {isDetached && (
+        <div className="flex items-center justify-center gap-2 rounded-[20px] border border-dashed border-blue-400/40 bg-blue-950/20 p-8 text-blue-300/70 sm:rounded-[24px]">
+          <MdPictureInPictureAlt className="h-5 w-5" />
+          <span className="text-sm font-medium">Video detached — floating on screen</span>
+          <button
+            onClick={handlePictureInPicture}
+            className="ml-2 rounded-lg bg-blue-600/80 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-blue-500"
+          >
+            Reattach
+          </button>
+        </div>
+      )}
+      <div
+        className={`relative overflow-hidden rounded-[20px] border border-white/45 bg-white/20 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.7)] backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/20 sm:rounded-[24px] ${
+          isDetached
+            ? 'fixed bottom-4 right-4 z-[9999] w-[50vw] min-w-[420px] max-w-[90vw] ring-2 ring-blue-500/50 shadow-2xl'
+            : ''
+        }`}
+        style={isDetached ? { resize: 'both', overflow: 'hidden' } : undefined}
+      >
         {/* Desktop controls: PiP + shrink/expand */}
         <div className="absolute right-3 top-3 z-20 hidden md:flex md:items-center md:gap-2">
           <Tooltip
