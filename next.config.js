@@ -29,6 +29,7 @@ const connectSrcValues = Array.from(new Set([
   'https://api.vercel.com',
   'https://gleitz.github.io',
   'https://*.vocalremover.org',
+  'https://*.run.app',
 ]));
 
 const contentSecurityPolicy = [
