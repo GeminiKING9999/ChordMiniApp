@@ -2,5 +2,11 @@
   command = "npm run build"
   publish = ".next"
 
+# Build-time environment variables
+# These ensure NEXT_PUBLIC_* vars are baked into the client JS bundle.
+# Netlify UI env vars override these values if set.
+[build.environment]
+  NEXT_PUBLIC_PYTHON_API_URL = "https://chordmini-backend-607485523232.us-east1.run.app"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"

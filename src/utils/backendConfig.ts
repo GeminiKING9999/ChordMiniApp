@@ -40,11 +40,15 @@ export function getBackendUrl(): string {
  */
 export function getDirectPythonUrl(): string | null {
   if (typeof window === 'undefined') return null;
-  const url = process.env.NEXT_PUBLIC_PYTHON_API_URL;
-  if (!url) return null;
   // Don't use direct URL on localhost (proxy works fine there)
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return null;
-  return url.replace(/\/+$/, '');
+  // Build-time env var (preferred — baked in by Next.js at build)
+  const url = process.env.NEXT_PUBLIC_PYTHON_API_URL;
+  if (url) return url.replace(/\/+$/, '');
+  // Runtime fallback: check for a meta tag injected by the hosting platform
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="x-python-api-url"]');
+  if (meta?.content) return meta.content.replace(/\/+$/, '');
+  return null;
 }
 
 /**

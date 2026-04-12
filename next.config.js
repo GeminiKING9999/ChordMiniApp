@@ -30,6 +30,7 @@ const connectSrcValues = Array.from(new Set([
   'https://gleitz.github.io',
   'https://*.vocalremover.org',
   'https://*.run.app',
+  'https://lukavukanovic.xyz',
 ]));
 
 const contentSecurityPolicy = [
@@ -52,8 +53,11 @@ const nextConfig = {
   transpilePackages: [],
 
   // Environment variables
+  // NEXT_PUBLIC_* vars should auto-inline, but explicitly listing ensures
+  // they survive all build pipelines (Netlify, Vercel, Docker, Turbopack).
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
+    NEXT_PUBLIC_PYTHON_API_URL: process.env.NEXT_PUBLIC_PYTHON_API_URL,
   },
 
   // Modern JavaScript compilation
