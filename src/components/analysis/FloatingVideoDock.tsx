@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { FaExpand, FaCompress } from 'react-icons/fa';
+import { MdPictureInPictureAlt } from 'react-icons/md';
 import { HiOutlineArrowPath, HiArrowPath } from 'react-icons/hi2';
 import { Tooltip } from '@heroui/react';
 import { AnalysisResult } from '@/services/chord-analysis/chordRecognitionService';
@@ -176,6 +177,77 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
     timeSignature,
   });
 
+  // Picture-in-Picture state
+  const [pipWindow, setPipWindow] = useState<Window | null>(null);
+  const pipCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const currentTimeRef = useRef(currentTime);
+  currentTimeRef.current = currentTime;
+
+  useEffect(() => {
+    return () => {
+      if (pipCheckRef.current) clearInterval(pipCheckRef.current);
+    };
+  }, []);
+
+  const isPipActive = !!(pipWindow && !pipWindow.closed);
+
+  const handlePictureInPicture = async () => {
+    if (isPipActive) {
+      pipWindow!.close();
+      setPipWindow(null);
+      return;
+    }
+
+    const startTime = Math.floor(currentTimeRef.current);
+    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&start=${startTime}&controls=1&modestbranding=1&rel=0`;
+
+    let win: Window | null = null;
+
+    // Try Document PiP API (Chrome 116+) for always-on-top window
+    if ('documentPictureInPicture' in window) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        win = await (window as any).documentPictureInPicture.requestWindow({
+          width: 640,
+          height: 360,
+        });
+        if (win) {
+          const doc = win.document;
+          doc.title = 'Chord Reaper \u2014 Video';
+          doc.body.style.cssText = 'margin:0;padding:0;overflow:hidden;background:#000';
+          const iframe = doc.createElement('iframe');
+          iframe.src = embedUrl;
+          iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+          iframe.style.cssText = 'width:100%;height:100%;border:none;position:absolute;top:0;left:0';
+          doc.body.appendChild(iframe);
+          win.addEventListener('pagehide', () => setPipWindow(null));
+        }
+      } catch {
+        win = null;
+      }
+    }
+
+    // Fallback: resizable popup window
+    if (!win) {
+      win = window.open(
+        embedUrl,
+        'chord-reaper-pip',
+        'width=640,height=360,menubar=no,toolbar=no,location=no,status=no,resizable=yes'
+      );
+      if (win) {
+        if (pipCheckRef.current) clearInterval(pipCheckRef.current);
+        pipCheckRef.current = setInterval(() => {
+          if (!win || win.closed) {
+            if (pipCheckRef.current) clearInterval(pipCheckRef.current);
+            setPipWindow(null);
+          }
+        }, 1000);
+      }
+    }
+
+    if (win) setPipWindow(win);
+  };
+
   // Don't render if no video URLs are available
   if (!youtubeEmbedUrl && !videoUrl) {
     return null;
@@ -314,8 +386,35 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
         </div>
       )}
       <div className="relative overflow-hidden rounded-[20px] border border-white/45 bg-white/20 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.7)] backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/20 sm:rounded-[24px]">
-        {/* Desktop shrink/expand control */}
-        <div className="absolute right-3 top-3 z-20 hidden md:block">
+        {/* Desktop controls: PiP + shrink/expand */}
+        <div className="absolute right-3 top-3 z-20 hidden md:flex md:items-center md:gap-2">
+          <Tooltip
+            content={isPipActive ? 'Close detached video' : 'Detach video (Picture-in-Picture)'}
+            placement="left"
+            delay={300}
+            closeDelay={100}
+            classNames={{
+              base: 'max-w-xs',
+              content: 'bg-white text-gray-900 dark:bg-content-bg dark:text-gray-100 border border-gray-300 dark:border-gray-600 shadow-lg'
+            }}
+          >
+            <button
+              onClick={handlePictureInPicture}
+              className={`group inline-flex h-10 min-w-10 items-center justify-center rounded-xl border px-2.5 text-white shadow-[0_10px_30px_-14px_rgba(15,23,42,0.95)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-16px_rgba(15,23,42,1)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/20 ${
+                isPipActive
+                  ? 'border-blue-400/40 bg-blue-600/80 hover:bg-blue-500/90'
+                  : 'border-white/20 bg-slate-950/10 hover:bg-slate-950/78'
+              }`}
+              aria-label={isPipActive ? 'Close detached video' : 'Detach video'}
+            >
+              <span className="flex items-center gap-2">
+                <MdPictureInPictureAlt className="h-4 w-4" />
+                <span className="hidden lg:inline text-[10px] font-semibold uppercase tracking-[0.16em] text-white/92">
+                  {isPipActive ? 'Close' : 'Detach'}
+                </span>
+              </span>
+            </button>
+          </Tooltip>
           <Tooltip
             content={isVideoMinimized ? 'Expand video player' : 'Shrink video player'}
             placement="left"
