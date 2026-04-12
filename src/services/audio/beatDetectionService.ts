@@ -1,7 +1,6 @@
 // Beat detection service to communicate with the Next.js API proxy
 import { createSafeTimeoutSignal } from '@/utils/environmentUtils';
 import { getAudioDurationFromFile } from '@/utils/audioDurationUtils';
-import { getResponseErrorMessage } from '@/utils/httpErrorUtils';
 import { offloadUploadService } from '../storage/offloadUploadService';
 
 // Interface for Python backend beat detection response
@@ -219,15 +218,12 @@ export async function detectBeatsWithRateLimit(
     });
 
     if (!response.ok) {
-      const errorMessage = await getResponseErrorMessage(
-        response,
-        `Beat detection failed: ${response.status} ${response.statusText}`,
-      );
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
 
       // Handle 403 Forbidden errors - likely port conflict or backend unavailable
       if (response.status === 403) {
         console.error(`❌ Beat detection API returned 403 Forbidden`);
-        console.error(`📄 Error response: ${errorMessage}`);
+        console.error(`📄 Error response:`, errorData);
 
         // Check if this is Apple AirTunes intercepting port 5000
         const serverHeader = response.headers.get('server');
@@ -235,10 +231,10 @@ export async function detectBeatsWithRateLimit(
           throw new Error('Port conflict: Port 5000 is being used by Apple AirTunes. Change Python backend to use a different port (e.g., 5001, 8000)');
         }
 
-        throw new Error(errorMessage);
+        throw new Error(`Beat detection failed: Backend returned 403 Forbidden. Ensure Python backend is running and accessible.`);
       }
 
-      throw new Error(errorMessage);
+      throw new Error(errorData.error || `Beat detection failed: ${response.status}`);
     }
 
     const data = await response.json();
@@ -487,15 +483,12 @@ export async function detectBeatsFromFile(
       });
 
       if (!response.ok) {
-        const errorMessage = await getResponseErrorMessage(
-          response,
-          `Beat detection failed: ${response.status} ${response.statusText}`,
-        );
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
 
         // Handle 403 Forbidden errors - likely port conflict or backend unavailable
         if (response.status === 403) {
           console.error(`❌ Beat detection API returned 403 Forbidden`);
-          console.error(`📄 Error response: ${errorMessage}`);
+          console.error(`📄 Error response:`, errorData);
 
           // Check if this is Apple AirTunes intercepting port 5000
           const serverHeader = response.headers.get('server');
@@ -503,14 +496,14 @@ export async function detectBeatsFromFile(
             throw new Error('Port conflict: Port 5000 is being used by Apple AirTunes. Change Python backend to use a different port (e.g., 5001, 8000)');
           }
 
-          throw new Error(errorMessage);
+          throw new Error(`Beat detection failed: Backend returned 403 Forbidden. Ensure Python backend is running and accessible.`);
         }
 
         // If Beat-Transformer failed and we haven't tried madmom yet, try madmom as fallback
         if (detector === 'beat-transformer') {
           return detectBeatsFromFile(audioFile, 'madmom', onProgress);
         }
-        throw new Error(errorMessage);
+        throw new Error(errorData.error || `Beat detection failed: ${response.status}`);
       }
 
       const data = await response.json();

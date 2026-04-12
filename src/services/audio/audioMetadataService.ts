@@ -34,7 +34,7 @@ export class AudioMetadataService {
    */
   async extractMetadataFromUrl(audioUrl: string): Promise<AudioMetadata | null> {
     try {
-      parseAndValidateAudioSourceUrl(audioUrl);
+      parseAndValidateAudioSourceUrl(audioUrl, { allowDevelopmentLocalhost: true });
       console.log(`🎵 Extracting audio metadata from: ${audioUrl}`);
 
       // Download the audio file
@@ -110,7 +110,7 @@ export class AudioMetadataService {
    */
   async extractMetadataFromPartialDownload(audioUrl: string, maxBytes: number = 2 * 1024 * 1024): Promise<AudioMetadata | null> {
     try {
-      parseAndValidateAudioSourceUrl(audioUrl);
+      parseAndValidateAudioSourceUrl(audioUrl, { allowDevelopmentLocalhost: true });
 
 
       // Download only the first part of the file

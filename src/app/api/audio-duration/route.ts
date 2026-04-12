@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     // Validate URL to prevent SSRF attacks
     try {
-      parseAndValidateAudioSourceUrl(audioUrl);
+      parseAndValidateAudioSourceUrl(audioUrl, { allowDevelopmentLocalhost: true });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Invalid URL format';
       return NextResponse.json(
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
  * Try to get duration from HTTP headers with Firebase Storage retry logic
  */
 async function getDurationFromHeaders(audioUrl: string): Promise<number> {
-  parseAndValidateAudioSourceUrl(audioUrl);
+  parseAndValidateAudioSourceUrl(audioUrl, { allowDevelopmentLocalhost: true });
   const isFirebaseUrl = isFirebaseStorageUrl(audioUrl);
   const maxRetries = isFirebaseUrl ? 3 : 1;
 
@@ -218,7 +218,7 @@ async function getDurationFromHeaders(audioUrl: string): Promise<number> {
  * Estimate duration from file size with Firebase Storage retry logic
  */
 async function estimateDurationFromFileSize(audioUrl: string): Promise<number> {
-  parseAndValidateAudioSourceUrl(audioUrl);
+  parseAndValidateAudioSourceUrl(audioUrl, { allowDevelopmentLocalhost: true });
   const isFirebaseUrl = isFirebaseStorageUrl(audioUrl);
   const maxRetries = isFirebaseUrl ? 3 : 1;
 
