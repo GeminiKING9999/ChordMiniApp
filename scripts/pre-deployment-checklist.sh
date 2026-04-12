@@ -199,7 +199,7 @@ echo ""
 echo "6. 🔗 Backend Service Check"
 echo "==========================="
 
-BACKEND_URL="https://chordmini-backend-full-191567167632.us-central1.run.app"
+BACKEND_URL="https://chordmini-backend-607485523232.us-east1.run.app"
 
 # Function to test backend with retry logic for cold starts
 test_backend_with_retry() {

@@ -2,6 +2,7 @@
 import { createSafeTimeoutSignal } from '@/utils/environmentUtils';
 import { getAudioDurationFromFile } from '@/utils/audioDurationUtils';
 import { offloadUploadService } from '../storage/offloadUploadService';
+import { getDirectPythonUrl } from '@/utils/backendConfig';
 
 // Interface for Python backend beat detection response
 export interface BeatDetectionBackendResponse {
@@ -211,7 +212,11 @@ export async function detectBeatsWithRateLimit(
 
     const abortSignal = createSafeTimeoutSignal(timeoutValue);
 
-    const response = await fetch('/api/detect-beats', {
+    // Use direct Python backend URL when configured (bypasses Netlify function timeout)
+    const directUrl = getDirectPythonUrl();
+    const fetchUrl = directUrl ? `${directUrl}/api/detect-beats` : '/api/detect-beats';
+
+    const response = await fetch(fetchUrl, {
       method: 'POST',
       body: formData,
       signal: abortSignal,
@@ -298,7 +303,9 @@ export async function detectBeatsFromFile(
     }
 
     // Check if file should use Firebase offload upload (> 4.5MB)
-    if (offloadUploadService.shouldUseBlobUpload(audioFile.size)) {
+    // Skip offload when direct Python URL is configured (no proxy timeout to work around)
+    const directUrl = getDirectPythonUrl();
+    if (!directUrl && offloadUploadService.shouldUseBlobUpload(audioFile.size)) {
 
 
       try {
@@ -462,7 +469,7 @@ export async function detectBeatsFromFile(
           reject(new Error('Beat detection was aborted'));
         });
 
-        xhr.open('POST', '/api/detect-beats');
+        xhr.open('POST', directUrl ? `${directUrl}/api/detect-beats` : '/api/detect-beats');
         xhr.send(formData);
       });
     }
@@ -476,7 +483,7 @@ export async function detectBeatsFromFile(
         formData.append('force', 'true');
       }
 
-      const response = await fetch('/api/detect-beats', {
+      const response = await fetch(directUrl ? `${directUrl}/api/detect-beats` : '/api/detect-beats', {
         method: 'POST',
         body: formData,
         signal: createSafeTimeoutSignal(800000), // 13+ minutes timeout to match API routes

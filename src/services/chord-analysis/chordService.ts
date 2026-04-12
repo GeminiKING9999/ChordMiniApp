@@ -8,6 +8,7 @@
 import { createSafeTimeoutSignal } from '@/utils/environmentUtils';
 import { offloadUploadService } from '@/services/storage/offloadUploadService';
 import { getAudioDurationFromFile } from '@/utils/audioDurationUtils';
+import { getDirectPythonUrl } from '@/utils/backendConfig';
 import type { ChordDetectorType, ChordDetectionResult, ChordRecognitionBackendResponse } from '@/types/audioAnalysis';
 
 /**
@@ -24,7 +25,9 @@ export async function recognizeChordsWithRateLimit(
     }
 
     // Blob path for > 4.5MB files
-    if (offloadUploadService.shouldUseBlobUpload(audioFile.size)) {
+    // Skip offload when direct Python URL is configured (no proxy timeout to work around)
+    const directPythonUrl = getDirectPythonUrl();
+    if (!directPythonUrl && offloadUploadService.shouldUseBlobUpload(audioFile.size)) {
       console.log(`🔄 File size ${offloadUploadService.getFileSizeString(audioFile.size)} > 4.5MB, using Firebase offload upload`);
 
       try {
@@ -77,12 +80,16 @@ export async function recognizeChordsWithRateLimit(
 
     const endpoint = getChordRecognitionEndpoint(safeModel);
 
+    // Use direct Python backend URL when configured (bypasses Netlify function timeout)
+    // Python backend always uses /api/recognize-chords regardless of model
+    const fetchUrl = directPythonUrl ? `${directPythonUrl}/api/recognize-chords` : endpoint;
+
     // Timeout
     const timeoutValue = 800000; // 13+ minutes
     const abortSignal = createSafeTimeoutSignal(timeoutValue);
 
     // Request
-    const response = await fetch(endpoint, { method: 'POST', body: formData, signal: abortSignal });
+    const response = await fetch(fetchUrl, { method: 'POST', body: formData, signal: abortSignal });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
       if (response.status === 403) {

@@ -28,6 +28,26 @@ export function getBackendUrl(): string {
 }
 
 /**
+ * Get the direct Python backend URL for ML processing endpoints.
+ *
+ * On production (Netlify/other), this bypasses the serverless function proxy
+ * to avoid timeout limitations. ML endpoints (beat detection, chord recognition)
+ * can take 30-120+ seconds, which exceeds Netlify's 10-26s function timeout.
+ *
+ * Set NEXT_PUBLIC_PYTHON_API_URL in your deployment environment to enable direct calls.
+ *
+ * @returns The direct Python backend URL, or null if not configured (local dev uses proxy)
+ */
+export function getDirectPythonUrl(): string | null {
+  if (typeof window === 'undefined') return null;
+  const url = process.env.NEXT_PUBLIC_PYTHON_API_URL;
+  if (!url) return null;
+  // Don't use direct URL on localhost (proxy works fine there)
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return null;
+  return url.replace(/\/+$/, '');
+}
+
+/**
  * Get the Python backend URL with runtime configuration (async, for client-side)
  *
  * Use this function in client-side code (React components, browser services)
