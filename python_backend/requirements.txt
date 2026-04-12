@@ -6,7 +6,7 @@
 # ============================================================================
 
 # Core Python dependencies (Updated to match local environment)
-setuptools>=68.0
+setuptools>=68.0,<81
 numpy==1.26.4
 numba==0.59.1
 scipy==1.13.1

@@ -25,7 +25,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY requirements.txt .
 
 # Install build dependencies first for madmom compilation
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir --upgrade pip 'setuptools>=68.0,<81' wheel
 RUN pip install --no-cache-dir Cython>=0.29.0 numpy==1.26.4
 RUN pip install --no-cache-dir git+https://github.com/CPJKU/madmom
 # Install all requirements except Spleeter first, then install Spleeter without deps to avoid resolver conflicts with librosa/httpx
@@ -36,7 +36,7 @@ RUN grep -v '^spleeter==' requirements.txt | grep -v '^typer==' > requirements_n
 
 # Re-install setuptools last to ensure pkg_resources is available at runtime
 # (dependency resolution above can remove it)
-RUN pip install --no-cache-dir setuptools>=68.0
+RUN pip install --no-cache-dir 'setuptools>=68.0,<81'
 
 # Stage 2: Runtime
 FROM python:3.10-slim as runtime
