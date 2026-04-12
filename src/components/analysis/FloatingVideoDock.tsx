@@ -191,7 +191,7 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
 
   const isPipActive = !!(pipWindow && !pipWindow.closed);
 
-  const handlePictureInPicture = async () => {
+  const handlePictureInPicture = () => {
     if (isPipActive) {
       pipWindow!.close();
       setPipWindow(null);
@@ -199,53 +199,24 @@ const FloatingVideoDock: React.FC<FloatingVideoDockProps> = ({
     }
 
     const startTime = Math.floor(currentTimeRef.current);
-    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&start=${startTime}&controls=1&modestbranding=1&rel=0`;
+    const watchUrl = `https://www.youtube.com/watch?v=${videoId}&t=${startTime}`;
 
-    let win: Window | null = null;
+    const win = window.open(
+      watchUrl,
+      'chord-reaper-pip',
+      'width=960,height=540,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=no'
+    );
 
-    // Try Document PiP API (Chrome 116+) for always-on-top window
-    if ('documentPictureInPicture' in window) {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        win = await (window as any).documentPictureInPicture.requestWindow({
-          width: 640,
-          height: 360,
-        });
-        if (win) {
-          const doc = win.document;
-          doc.title = 'Chord Reaper \u2014 Video';
-          doc.body.style.cssText = 'margin:0;padding:0;overflow:hidden;background:#000';
-          const iframe = doc.createElement('iframe');
-          iframe.src = embedUrl;
-          iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-          iframe.style.cssText = 'width:100%;height:100%;border:none;position:absolute;top:0;left:0';
-          doc.body.appendChild(iframe);
-          win.addEventListener('pagehide', () => setPipWindow(null));
+    if (win) {
+      if (pipCheckRef.current) clearInterval(pipCheckRef.current);
+      pipCheckRef.current = setInterval(() => {
+        if (!win || win.closed) {
+          if (pipCheckRef.current) clearInterval(pipCheckRef.current);
+          setPipWindow(null);
         }
-      } catch {
-        win = null;
-      }
+      }, 1000);
+      setPipWindow(win);
     }
-
-    // Fallback: resizable popup window
-    if (!win) {
-      win = window.open(
-        embedUrl,
-        'chord-reaper-pip',
-        'width=640,height=360,menubar=no,toolbar=no,location=no,status=no,resizable=yes'
-      );
-      if (win) {
-        if (pipCheckRef.current) clearInterval(pipCheckRef.current);
-        pipCheckRef.current = setInterval(() => {
-          if (!win || win.closed) {
-            if (pipCheckRef.current) clearInterval(pipCheckRef.current);
-            setPipWindow(null);
-          }
-        }, 1000);
-      }
-    }
-
-    if (win) setPipWindow(win);
   };
 
   // Don't render if no video URLs are available
