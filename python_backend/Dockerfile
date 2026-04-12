@@ -34,6 +34,10 @@ RUN grep -v '^spleeter==' requirements.txt | grep -v '^typer==' > requirements_n
     && pip install --no-cache-dir --no-deps typer==0.9.0 \
     && pip install --no-cache-dir --no-deps spleeter==2.3.2
 
+# Re-install setuptools last to ensure pkg_resources is available at runtime
+# (dependency resolution above can remove it)
+RUN pip install --no-cache-dir setuptools>=68.0
+
 # Stage 2: Runtime
 FROM python:3.10-slim as runtime
 
