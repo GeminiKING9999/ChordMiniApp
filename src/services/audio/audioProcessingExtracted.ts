@@ -1,6 +1,7 @@
 import { AnalyzeAudioFileOptions } from '@/services/audio/audioProcessingService';
 import { getTranscription, TranscriptionData } from '@/services/firebase/firestoreService';
 import { apiPost } from '@/config/api';
+import { getDirectPythonUrl } from '@/utils/backendConfig';
 import { LyricsData } from '@/types/musicAiTypes';
 
 // Types for the service
@@ -412,12 +413,19 @@ export const extractAudioFromYouTube = async (deps: AudioProcessingServiceDepend
     }, 300);
 
     try {
-      const response = await apiPost('EXTRACT_AUDIO', {
-        videoId,
-        forceRefresh,
-        videoMetadata,
-        originalTitle: titleFromSearch
-      }, {
+      // Use direct Python backend URL to bypass Netlify function timeout
+      const directUrl = getDirectPythonUrl();
+      const fetchUrl = directUrl ? `${directUrl}/api/extract-audio` : '/api/extract-audio';
+
+      const response = await fetch(fetchUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoId,
+          forceRefresh,
+          videoMetadata,
+          originalTitle: titleFromSearch
+        }),
         signal: abortSignal
       });
 
