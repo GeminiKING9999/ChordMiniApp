@@ -114,8 +114,6 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
   const targetKey = useTargetKey();
 
   const [viewMode, setViewMode] = useState<'animated' | 'summary'>('animated');
-  const [chordDataCache, setChordDataCache] = useState<Map<string, ChordData | null>>(new Map());
-  const [isLoadingChords, setIsLoadingChords] = useState<boolean>(false);
 
   // Shared guitar voicing state
   const capoFret = useGuitarCapoFret();
@@ -131,7 +129,7 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
 
   const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1024);
 
-  // Wrapped setter that clears chord data cache when capo changes (new chord shapes need to be loaded)
+  // Wrapped setter that updates the capo fret when capo changes
   const setCapoFret = useCallback((value: number | ((prev: number) => number), options?: { isUserInitiated?: boolean }) => {
     const nextValue = typeof value === 'function' ? value(capoFret) : value;
     if (!Number.isFinite(nextValue)) {
@@ -141,7 +139,6 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
       hasUserAdjustedCapoRef.current = true;
     }
     setSharedCapoFret(nextValue);
-    setChordDataCache(new Map());
   }, [capoFret, setSharedCapoFret]);
 
   // When capo is set, transpose chords DOWN by capo fret count to get the "shape" chord
@@ -362,44 +359,13 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
     return Array.from(chordSet).sort();
   }, [resolvedChordGridData, processedChordData.entries]);
 
-  const currentChordNameForCache = useMemo(() => {
-    return processedChordData.entries[currentBeatIndex]?.shape || null;
-  }, [processedChordData.entries, currentBeatIndex]);
-
-  useEffect(() => {
-    const loadChordData = async () => {
-      const chordsToLoad = new Set<string>();
-      uniqueChordsForGuitarDiagrams.forEach(chord => {
-        if (!chordDataCache.has(chord)) chordsToLoad.add(chord);
-      });
-      if (currentChordNameForCache && !chordDataCache.has(currentChordNameForCache)) {
-        chordsToLoad.add(currentChordNameForCache);
-      }
-      if (chordsToLoad.size > 0) {
-        setIsLoadingChords(true);
-        try {
-          const results = await Promise.all(
-            Array.from(chordsToLoad).map(async (chord) => ({ chord, data: await chordMappingService.getChordData(chord) }))
-          );
-          setChordDataCache(cache => {
-            const updatedCache = new Map(cache);
-            results.forEach(({ chord, data }) => updatedCache.set(chord, data));
-            return updatedCache;
-          });
-        } catch (error) { console.error('Failed to load chord data:', error); }
-        setIsLoadingChords(false);
-      }
-    };
-    loadChordData();
-  }, [uniqueChordsForGuitarDiagrams, currentChordNameForCache, chordDataCache]);
-
   // Unfiltered chord data for guitar diagrams (always shows all chords with consistent corrections)
   const uniqueChordDataForGuitarDiagrams = useMemo(() => {
     const seenChords = new Set<string>();
     return uniqueChordsForGuitarDiagrams
       .filter(chord => !seenChords.has(chord) && seenChords.add(chord))
-      .map(chord => ({ name: chord, data: chordDataCache.get(chord) || null }));
-  }, [uniqueChordsForGuitarDiagrams, chordDataCache]);
+      .map(chord => ({ name: chord, data: chordMappingService.getChordDataSync(chord) }));
+  }, [uniqueChordsForGuitarDiagrams]);
 
 
 
@@ -621,14 +587,7 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
 
       {/* Guitar Chord Diagrams Section */}
       <div className="chord-diagrams-section relative backdrop-blur-md bg-white/50 dark:bg-slate-900/60 rounded-xl border border-white/20 dark:border-white/8">
-        {isLoadingChords && viewMode === 'animated' && (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-sm text-gray-600 dark:text-gray-400">Loading Diagrams...</span>
-          </div>
-        )}
-
-        {!isLoadingChords && viewMode === 'animated' ? (
+        {viewMode === 'animated' ? (
           <div className="animated-chord-view relative overflow-visible">
             <div className="flex justify-center items-start py-1" style={{ minHeight: Math.max(diagramConfig.diagramHeight + 50, 100) }}>
                 <AnimatePresence initial={false}>
@@ -646,7 +605,7 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
 
                     return (
                       <motion.div
-                        layout
+                        layout="position"
                         key={`guitar-chord-${chordInfo.startIndex}`}
                         initial={false}
                         animate={{
@@ -666,7 +625,7 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
                           margin: `0 ${diagramConfig.marginX}px`,
                         }}>
                         <GuitarChordDiagram
-                          chordData={chordDataCache.get(chordInfo.chord) || null}
+                          chordData={chordMappingService.getChordDataSync(chordInfo.chord)}
                           positionIndex={chordPositions[chordInfo.chord] || 0}
                           size={diagramConfig.size}
                           customWidth={diagramConfig.diagramWidth}
@@ -693,7 +652,7 @@ export const GuitarChordsTab: React.FC<GuitarChordsTabProps> = ({
                 </AnimatePresence>
             </div>
           </div>
-        ) : !isLoadingChords && (
+        ) : (
           <div className="summary-chord-view relative p-4 sm:p-6">
             <h3 className="mb-4 text-center text-base font-medium text-gray-700 dark:text-gray-300 sm:mb-6 sm:text-lg">All Chords in Song ({uniqueChordsForGuitarDiagrams.length} unique)</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4 md:gap-6 justify-items-center">
