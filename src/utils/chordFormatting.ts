@@ -221,7 +221,7 @@ export function formatChordWithMusicalSymbols(chordName: string, isDarkMode: boo
   }
 
   if (quality.includes('Δ')) {
-    quality = quality.replace(/Δ/g, `<span style="${MAJOR_TRIANGLE_STYLE}">Δ</span>`);
+    quality = quality.replace(/Δ/g, 'maj');
   }
 
   // Apply professional chord quality notation with uniform font weight
@@ -258,17 +258,13 @@ export function formatChordWithMusicalSymbols(chordName: string, isDarkMode: boo
     quality = quality.replace('aug', '<span style="font-weight: inherit; position:relative">+</span>');
   } else if (quality.includes('7') || quality.includes('9') || quality.includes('11') || quality.includes('13')) {
     // Handle extensions with proper formatting
-
+ 
     // FIXED: Handle complex cases with consistent superscript sizing
     if (quality.startsWith('min')) {
       quality = '<span style="font-weight: inherit;">m</span>' + quality.substring(3).replace(/(\d+)/g, `<sup style="${SUPERSCRIPT_STYLE}">$1</sup>`);
     } else if (quality.startsWith('maj')) {
-      // Use triangle (Δ) for major 7th chords - industry standard
-      if (quality === 'maj7') {
-        quality = `<span style="${MAJOR_TRIANGLE_STYLE}">Δ</span><sup style="${SUPERSCRIPT_STYLE}">7</sup>`;
-      } else {
-        quality = '<span style="font-weight: inherit;">maj</span>' + quality.substring(3).replace(/(\d+)/g, `<sup style="${SUPERSCRIPT_STYLE}">$1</sup>`);
-      }
+      // Use standard 'maj' notation (e.g., Cmaj7) instead of the triangle symbol
+      quality = '<span style="font-weight: inherit;">maj</span>' + quality.substring(3).replace(/(\d+)/g, `<sup style="${SUPERSCRIPT_STYLE}">$1</sup>`);
     } else {
       // Make numeric extensions superscript with consistent sizing
       quality = '<span style="font-weight: inherit;">' + quality.replace(/(\d+)/g, `</span><sup style="${SUPERSCRIPT_STYLE}">$1</sup><span style="font-weight: inherit;">`) + '</span>';
