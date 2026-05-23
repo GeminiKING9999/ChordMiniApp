@@ -413,9 +413,8 @@ export const extractAudioFromYouTube = async (deps: AudioProcessingServiceDepend
     }, 300);
 
     try {
-      // Use direct Python backend URL to bypass Netlify function timeout
-      const directUrl = getDirectPythonUrl();
-      const fetchUrl = directUrl ? `${directUrl}/api/extract-audio` : '/api/extract-audio';
+      // Use same-origin Next.js proxy since it supports 300s timeout on Vercel and completely avoids CORS errors
+      const fetchUrl = '/api/extract-audio';
 
       const response = await fetch(fetchUrl, {
         method: 'POST',
