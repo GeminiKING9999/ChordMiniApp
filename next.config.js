@@ -27,6 +27,8 @@ const connectSrcValues = Array.from(new Set([
   'https://vercel.com',
   'https://*.vercel.com',
   'https://api.vercel.com',
+  'https://vercel.live',
+  'https://*.vercel.live',
   'https://gleitz.github.io',
   'https://*.vocalremover.org',
   'https://*.run.app',
@@ -36,9 +38,9 @@ const connectSrcValues = Array.from(new Set([
 const contentSecurityPolicy = [
   `connect-src ${connectSrcValues.join(' ')}`,
   "worker-src 'self' blob:",
-  "frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://*.firebaseapp.com https://s3.us-east-1.amazonaws.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
+  "frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://*.firebaseapp.com https://s3.us-east-1.amazonaws.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://vercel.live https://*.vercel.live",
   "img-src 'self' data: https://*.googleapis.com https://*.youtube.com https://*.ytimg.com https://*.ggpht.com https://*.google.com https://*.doubleclick.net https://*.googlesyndication.com https://pagead2.googlesyndication.com",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://*.googleapis.com https://*.google.com https://*.doubleclick.net https://*.googlesyndication.com https://gleitz.github.io",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://*.googleapis.com https://*.google.com https://*.doubleclick.net https://*.googlesyndication.com https://gleitz.github.io https://vercel.live https://*.vercel.live",
 ].join('; ');
 
 const nextConfig = {
