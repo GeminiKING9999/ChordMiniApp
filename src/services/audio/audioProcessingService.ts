@@ -57,7 +57,14 @@ export class AudioProcessingService {
     originalTitle?: string
   ): Promise<{ audioUrl: string; fromCache: boolean; isStreamUrl?: boolean; streamExpiresAt?: number; title?: string; duration?: number }> {
     try {
-      const response = await fetch('/api/extract-audio', {
+      // Prefer Cloud Run yt-dlp in production (long timeout + current extractor).
+      const { getDirectPythonUrl } = await import('@/utils/backendConfig');
+      const directPython = getDirectPythonUrl();
+      const extractUrl = directPython
+        ? `${directPython}/api/extract-audio`
+        : '/api/extract-audio';
+
+      const response = await fetch(extractUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -413,8 +413,16 @@ export const extractAudioFromYouTube = async (deps: AudioProcessingServiceDepend
     }, 300);
 
     try {
-      // Use same-origin Next.js proxy since it supports 300s timeout on Vercel and completely avoids CORS errors
-      const fetchUrl = '/api/extract-audio';
+      // Production: call Cloud Run yt-dlp extract directly (600s timeout, current yt-dlp).
+      // Netlify/yt-mp3-go uses outdated extractors and dies on SABR/signature changes.
+      // Localhost: same-origin /api/extract-audio (local yt-dlp).
+      const { getDirectPythonUrl } = await import('@/utils/backendConfig');
+      const directPython = getDirectPythonUrl();
+      const fetchUrl = directPython
+        ? `${directPython}/api/extract-audio`
+        : '/api/extract-audio';
+
+      console.log(`🎵 Extract via ${directPython ? 'Cloud Run yt-dlp' : 'local/Next proxy'}: ${fetchUrl}`);
 
       const response = await fetch(fetchUrl, {
         method: 'POST',
@@ -422,6 +430,7 @@ export const extractAudioFromYouTube = async (deps: AudioProcessingServiceDepend
         body: JSON.stringify({
           videoId,
           forceRefresh,
+          forceRedownload: forceRefresh,
           videoMetadata,
           originalTitle: titleFromSearch
         }),
@@ -431,7 +440,7 @@ export const extractAudioFromYouTube = async (deps: AudioProcessingServiceDepend
       // Clear progress interval
       clearInterval(progressInterval);
 
-      const data = await response.json();
+      let data = await response.json();
 
       // Ignore stale responses (user switched videos mid-flight)
       if (!isRequestStillCurrent(requestId)) {
@@ -439,7 +448,69 @@ export const extractAudioFromYouTube = async (deps: AudioProcessingServiceDepend
         return;
       }
 
-      if (data.success) {
+      // Handle async job pattern: server returned a jobId for polling
+      if (data.success && data.status === 'processing' && data.jobId) {
+        console.log(`🔄 Async job created: ${data.jobId}, starting polling...`);
+        processingContext.setStatusMessage('Processing audio... This may take a minute.');
+
+        const pollStartTime = Date.now();
+        const POLL_INTERVAL_MS = 4000; // 4 seconds between polls
+        const POLL_TIMEOUT_MS = 180000; // 3 minute total timeout
+
+        while (Date.now() - pollStartTime < POLL_TIMEOUT_MS) {
+          // Check if request is still current
+          if (!isRequestStillCurrent(requestId) || abortSignal?.aborted) {
+            console.log('🔁 Polling aborted: request no longer current');
+            return;
+          }
+
+          // Wait before next poll
+          await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+
+          // Update progress
+          const elapsed = (Date.now() - pollStartTime) / 1000;
+          const pollProgress = Math.min(85, 20 + (elapsed / 120) * 65);
+          processingContext.setProgress(Math.round(pollProgress));
+
+          try {
+            const statusResponse = await fetch('/api/extract-audio/status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                jobId: data.jobId,
+                videoId,
+                title: titleFromSearch
+              }),
+              signal: abortSignal
+            });
+
+            const statusData = await statusResponse.json();
+
+            if (statusData.status === 'complete' && statusData.success) {
+              console.log(`✅ Async extraction complete: ${statusData.audioUrl}`);
+              data = statusData; // Replace data with completed result
+              break;
+            }
+
+            if (statusData.status === 'failed') {
+              throw new Error(statusData.error || 'Audio extraction failed');
+            }
+
+            // Still processing - continue polling
+            console.log(`⏳ Job still processing... (${Math.round(elapsed)}s elapsed)`);
+          } catch (pollError) {
+            if (abortSignal?.aborted) return;
+            console.warn('⚠️ Poll request failed, retrying...', pollError);
+          }
+        }
+
+        // Check if we timed out
+        if (data.status === 'processing') {
+          throw new Error('Audio extraction timed out. The video may be too long or the service is busy.');
+        }
+      }
+
+      if (data.success && (data.audioUrl || data.status === 'complete')) {
         // console.log(`✅ Audio extraction successful: ${data.audioUrl}`);
         // console.log(`📊 Extraction metadata: fromCache=${data.fromCache}, title="${data.title}", duration=${data.duration}`);
 

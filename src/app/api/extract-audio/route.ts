@@ -1,34 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { audioExtractionServiceSimplified, YouTubeVideoMetadata } from '@/services/audio/audioExtractionSimplified';
 import { detectEnvironment } from '@/utils/environmentDetection';
 
 /**
- * Audio Extraction API Route - Environment-Aware Service Integration
+ * Audio Extraction API Route
  *
- * This route implements a streamlined extraction workflow:
- * - Uses YouTube search metadata directly (no filename guessing)
- * - Video ID-based caching and storage
- * - Environment-aware service selection:
- *   - Production: yt-mp3-go (lukavukanovic.xyz - reliable, works from datacenter IPs)
- *   - Local Development: yt-dlp
- *   - Deprecated: ytdown-io (blocked by Cloudflare bot protection)
- * - Leverages existing search results for metadata
+ * - Local development: yt-dlp on the machine
+ * - Production: prefer Cloud Run Python /api/extract-audio (current yt-dlp).
+ *   Client code usually calls Cloud Run directly via getDirectPythonUrl() so
+ *   Netlify does not hit function timeouts. This route still proxies for
+ *   server-side callers and caches.
+ *
+ * Legacy fallback: yt-mp3-go async job (often outdated / SABR failures).
  */
 
-// Configure Vercel function timeout - Use 300 seconds to match vercel.json
-// This allows time for audio extraction job creation + polling attempts
+// Allow long proxy when platform supports it (Cloud Run path can take minutes)
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body
     const data = await request.json();
     const {
       videoId,
       forceRedownload = false,
       getInfoOnly = false,
       originalTitle,
-      // New: Accept YouTube search metadata directly
       videoMetadata
     } = data;
 
@@ -39,7 +34,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`🎵 Simplified audio extraction: ${videoId}${originalTitle ? ` ("${originalTitle}")` : ''}`);
+    console.log(`🎵 Audio extraction request: ${videoId}${originalTitle ? ` ("${originalTitle}")` : ''}`);
 
     // If getInfoOnly is true, just return basic video info
     if (getInfoOnly) {
@@ -52,46 +47,26 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    try {
-      let result;
+    const env = detectEnvironment();
 
-      // Use extraction with search metadata if available
-      if (videoMetadata) {
-        console.log(`📊 Using provided video metadata for ${videoId}`);
-        result = await audioExtractionServiceSimplified.extractAudio(videoMetadata, forceRedownload);
-      } else {
-        // Fallback: create metadata from available data
-        const fallbackMetadata: YouTubeVideoMetadata = {
-          id: videoId,
-          title: typeof originalTitle === 'string' && originalTitle.length > 0 ? originalTitle : 'YouTube Video',
-          thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
-          channelTitle: 'Unknown Channel'
-        };
+    // === LOCAL DEVELOPMENT: Use synchronous yt-dlp (no timeout constraints) ===
+    if (env.strategy === 'ytdlp' && (env.isDevelopment || process.env.NEXT_PUBLIC_AUDIO_STRATEGY === 'ytdlp')) {
+      const { audioExtractionServiceSimplified } = await import('@/services/audio/audioExtractionSimplified');
+      const meta = videoMetadata || {
+        id: videoId,
+        title: originalTitle || 'YouTube Video',
+        thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+        channelTitle: 'Unknown Channel'
+      };
 
-        console.log(`🔄 Using fallback metadata for ${videoId}`);
-        result = await audioExtractionServiceSimplified.extractAudio(fallbackMetadata, forceRedownload);
-      }
+      const result = await audioExtractionServiceSimplified.extractAudio(meta, forceRedownload);
 
       if (!result.success) {
-        console.error('❌ Simplified extraction failed', { videoId, error: result.error });
         return NextResponse.json(
-          {
-            success: false,
-            error: result.error || 'Audio extraction failed',
-            details: 'Audio extraction service is currently unavailable or the video cannot be processed',
-            suggestion: 'The video may be restricted, too long, or temporarily unavailable. Please try a different video or try again later.'
-          },
+          { success: false, error: result.error || 'Audio extraction failed' },
           { status: 500 }
         );
       }
-
-      console.log(`✅ Simplified extraction successful for ${videoId}`);
-
-      // Determine the method based on environment
-      const env = detectEnvironment();
-      const method = env.strategy === 'ytdlp' ? 'yt-dlp' :
-                    env.strategy === 'ytdown-io' ? 'ytdown-io' :
-                    'yt-mp3-go';
 
       return NextResponse.json({
         success: true,
@@ -102,28 +77,132 @@ export async function POST(request: NextRequest) {
         fromCache: result.fromCache,
         isStreamUrl: result.isStreamUrl,
         streamExpiresAt: result.streamExpiresAt,
-        method
+        method: 'yt-dlp'
       });
+    }
 
-    } catch (extractionError) {
-      console.error('❌ Simplified extraction error', { videoId, extractionError });
+    // === PRODUCTION: Firebase cache, then Cloud Run yt-dlp, then yt-mp3-go job ===
 
-      const errorMessage = extractionError instanceof Error ? extractionError.message : 'Unknown error';
+    // Step 1: Check Firebase cache (fast path)
+    if (!forceRedownload) {
+      try {
+        const { ensureFirebaseInitialized } = await import('@/config/firebase');
+        await ensureFirebaseInitialized();
+      } catch (initError) {
+        console.warn('⚠️ Firebase initialization failed, skipping cache check:', initError);
+      }
 
+      // Check Firebase Storage for permanent audio files
+      try {
+        const { findExistingAudioFile } = await import('@/services/firebase/firebaseStorageService');
+        const existingFile = await findExistingAudioFile(videoId);
+
+        if (existingFile) {
+          console.log(`✅ Firebase Storage cache hit for ${videoId}`);
+          return NextResponse.json({
+            success: true,
+            audioUrl: existingFile.audioUrl,
+            title: originalTitle || `YouTube Video ${videoId}`,
+            duration: 0,
+            youtubeEmbedUrl: `https://www.youtube.com/embed/${videoId}`,
+            fromCache: true,
+            isStreamUrl: false,
+            method: 'firebase-cache'
+          });
+        }
+      } catch (storageError) {
+        console.warn('⚠️ Firebase Storage check failed:', storageError);
+      }
+
+      // Check Firestore metadata cache
+      try {
+        const { firebaseStorageSimplified } = await import('@/services/firebase/firebaseStorageSimplified');
+        const cached = await firebaseStorageSimplified.getCachedAudioMetadata(videoId);
+
+        if (cached) {
+          console.log(`✅ Firestore cache hit for ${videoId}`);
+          return NextResponse.json({
+            success: true,
+            audioUrl: cached.audioUrl,
+            title: cached.title,
+            duration: cached.duration,
+            youtubeEmbedUrl: `https://www.youtube.com/embed/${videoId}`,
+            fromCache: true,
+            isStreamUrl: cached.isStreamUrl,
+            streamExpiresAt: cached.streamExpiresAt,
+            method: 'firestore-cache'
+          });
+        }
+      } catch (cacheError) {
+        console.warn('⚠️ Firestore cache check failed:', cacheError);
+      }
+    }
+
+    // Step 2: Cloud Run yt-dlp (preferred production extractor)
+    try {
+      const { getPythonApiUrl } = await import('@/config/serverBackend');
+      const { createSafeTimeoutSignal } = await import('@/utils/environmentUtils');
+      const backendUrl = getPythonApiUrl();
+
+      if (backendUrl && !backendUrl.includes('localhost') && !backendUrl.includes('127.0.0.1')) {
+        console.log(`🚀 Proxying extract to Cloud Run yt-dlp: ${backendUrl}`);
+        const backendResponse = await fetch(`${backendUrl}/api/extract-audio`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            videoId,
+            originalTitle,
+            videoMetadata,
+            forceRefresh: forceRedownload,
+          }),
+          signal: createSafeTimeoutSignal(280000),
+        });
+
+        const backendData = await backendResponse.json().catch(() => ({}));
+        if (backendResponse.ok && backendData.success && backendData.audioUrl) {
+          return NextResponse.json({
+            ...backendData,
+            youtubeEmbedUrl: `https://www.youtube.com/embed/${videoId}`,
+          });
+        }
+        console.warn('⚠️ Cloud Run extract failed, falling back to yt-mp3-go:', backendData?.error || backendResponse.status);
+      }
+    } catch (cloudRunError) {
+      console.warn('⚠️ Cloud Run extract error, falling back to yt-mp3-go:', cloudRunError);
+    }
+
+    // Step 3: Legacy yt-mp3-go async job (often outdated)
+    console.log(`🚀 Creating yt-mp3-go async extraction job for ${videoId}...`);
+
+    const { ytMp3GoService } = await import('@/services/youtube/ytMp3GoService');
+    const jobResult = await ytMp3GoService.createJobOnly(videoId, originalTitle, 'medium');
+
+    if (!jobResult.success || !jobResult.jobId) {
+      console.error(`❌ Failed to create extraction job for ${videoId}:`, jobResult.error);
       return NextResponse.json(
         {
           success: false,
-          error: 'Audio extraction failed',
-          details: errorMessage,
-          suggestion: 'The video may be restricted, too long, or temporarily unavailable. Please try a different video or try again later.'
+          error: jobResult.error || 'Failed to create extraction job',
+          suggestion: 'The video may be restricted, or upload an audio file instead. YouTube extractors break when outdated.'
         },
         { status: 500 }
       );
     }
 
-  } catch (error: unknown) {
-    console.error('Error proxying audio extraction:', error);
+    console.log(`✅ Job created: ${jobResult.jobId} for ${videoId}`);
 
+    return NextResponse.json({
+      success: true,
+      status: 'processing',
+      jobId: jobResult.jobId,
+      videoId,
+      title: originalTitle || `YouTube Video ${videoId}`,
+      youtubeEmbedUrl: `https://www.youtube.com/embed/${videoId}`,
+      message: 'Audio extraction job created. Poll /api/extract-audio/status for completion.'
+    });
+
+  } catch (error: unknown) {
+    console.error('Error in audio extraction:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     return NextResponse.json(

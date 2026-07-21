@@ -1,27 +1,28 @@
 """
 Audio extraction routes for ChordMini Flask application.
 
-This module provides the /api/extract-audio endpoint that proxies
-YouTube audio extraction through the yt-mp3-go service, avoiding
-Netlify function timeouts by running on Cloud Run (600s timeout).
+Primary path: local yt-dlp on Cloud Run (up-to-date, 600s timeout).
+Fallback: yt-mp3-go third-party (often outdated yt-dlp; fails on SABR).
 """
 
 import json
 import re
 import time
+import os
 
 import requests as http_requests
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_file
 from extensions import limiter
 from config import get_config
 from utils.logging import log_info, log_error
+from blueprints.audio.ytdlp_extract import extract_audio_with_ytdlp, get_cached_extract
 
 # Create blueprint
 audio_bp = Blueprint('audio', __name__)
 
 config = get_config()
 
-# yt-mp3-go service configuration
+# yt-mp3-go service configuration (fallback only)
 YT_MP3_GO_BASE = 'https://lukavukanovic.xyz'
 YT_MP3_GO_PATH = '/yt-downloader'
 DEFAULT_QUALITY = 'low'  # low quality is sufficient for chord/beat analysis
@@ -146,11 +147,37 @@ def _parse_sse_block(block: str, job_id: str) -> dict | None:
     return None
 
 
+@audio_bp.route('/api/extracted-audio/<token>', methods=['GET', 'HEAD', 'OPTIONS'])
+def serve_extracted_audio(token: str):
+    """Serve a short-lived audio file produced by yt-dlp on this instance."""
+    if request.method == 'OPTIONS':
+        return ('', 204)
+
+    entry = get_cached_extract(token)
+    if not entry:
+        return jsonify({'error': 'Extracted audio not found or expired'}), 404
+
+    path = entry.get('path')
+    if not path or not os.path.isfile(path):
+        return jsonify({'error': 'Extracted audio file missing'}), 404
+
+    return send_file(
+        path,
+        mimetype=entry.get('content_type') or 'audio/mpeg',
+        as_attachment=False,
+        download_name=f'{token}.mp3',
+        conditional=True,
+    )
+
+
 @audio_bp.route('/api/extract-audio', methods=['POST'])
 @limiter.limit(config.get_rate_limit('heavy_processing'))
 def extract_audio():
     """
-    Extract audio from a YouTube video via yt-mp3-go service.
+    Extract audio from a YouTube video.
+
+    Primary: yt-dlp on this Cloud Run service (current extractor).
+    Fallback: yt-mp3-go third-party (often fails with outdated yt-dlp).
 
     Request JSON:
         - videoId (str, required): YouTube video ID (11 chars)
@@ -161,10 +188,9 @@ def extract_audio():
     Returns JSON:
         - success (bool)
         - audioUrl (str): Direct download URL for the audio
-        - title (str): Video title
-        - duration (float): Duration in seconds
-        - fromCache (bool): Always False (no server-side cache)
-        - method (str): 'yt-mp3-go'
+        - title (str)
+        - duration (float)
+        - method (str): 'yt-dlp' | 'yt-dlp-firebase' | 'yt-mp3-go'
     """
     if not request.is_json:
         return jsonify({'success': False, 'error': 'Request must be JSON'}), 400
@@ -179,15 +205,37 @@ def extract_audio():
         return jsonify({'success': False, 'error': 'Invalid videoId'}), 400
 
     original_title = data.get('originalTitle', '')
-    video_metadata = data.get('videoMetadata', {})
+    video_metadata = data.get('videoMetadata', {}) or {}
     title = original_title or video_metadata.get('title', f'YouTube Video {sanitized_id}')
 
     log_info(f"Audio extraction request: {sanitized_id} ({title})")
 
+    public_base = os.environ.get('PUBLIC_BACKEND_URL', '').rstrip('/')
+    if not public_base:
+        # Stable production URL (avoids multi-instance temp-file misses when Firebase upload fails)
+        if os.environ.get('K_SERVICE'):
+            public_base = 'https://chordmini-backend-607485523232.us-east1.run.app'
+        else:
+            proto = request.headers.get('X-Forwarded-Proto', 'https')
+            host = request.headers.get('X-Forwarded-Host', request.host)
+            public_base = f'{proto}://{host}'.rstrip('/')
+
+    # --- Primary: local yt-dlp ---
+    ok, payload = extract_audio_with_ytdlp(
+        sanitized_id,
+        preferred_title=title,
+        public_base_url=public_base,
+    )
+    if ok:
+        return jsonify(payload)
+
+    ytdlp_error = payload.get('error', 'yt-dlp failed')
+    log_error(f"yt-dlp primary path failed for {sanitized_id}: {ytdlp_error}; trying yt-mp3-go fallback")
+
     youtube_url = f'https://www.youtube.com/watch?v={sanitized_id}'
 
     try:
-        # Step 1: Get video info
+        # Fallback: yt-mp3-go (often outdated; kept as last resort)
         info_title = title
         info_duration = 0
         try:
@@ -208,7 +256,6 @@ def extract_audio():
         except Exception as e:
             log_error(f"Info request failed (non-fatal): {e}")
 
-        # Step 2: Create download job
         safe_filename = _generate_safe_filename(sanitized_id, info_title)
         job_resp = http_requests.post(
             f'{YT_MP3_GO_BASE}{YT_MP3_GO_PATH}/download',
@@ -230,7 +277,8 @@ def extract_audio():
             log_error(f"Job creation failed: {job_resp.status_code} - {error_text}")
             return jsonify({
                 'success': False,
-                'error': f'Failed to start extraction: {job_resp.status_code}'
+                'error': f'All extraction methods failed. yt-dlp: {ytdlp_error}. yt-mp3-go: {job_resp.status_code}',
+                'suggestion': 'Try uploading an audio file instead, or a different video.',
             }), 502
 
         job_data = job_resp.json()
@@ -240,19 +288,21 @@ def extract_audio():
             log_error(f"No jobID in response: {job_data}")
             return jsonify({
                 'success': False,
-                'error': 'Extraction service did not return a job ID'
+                'error': f'All extraction methods failed. yt-dlp: {ytdlp_error}. yt-mp3-go: no job ID',
             }), 502
 
         log_info(f"Extraction job created: {job_id}")
 
-        # Step 3: Poll SSE for completion
         result = _poll_sse_for_completion(job_id, timeout=JOB_TIMEOUT)
 
         if not result['success']:
             return jsonify({
                 'success': False,
-                'error': result.get('error', 'Extraction failed'),
-                'suggestion': 'The video may be restricted or too long. Try a different video.'
+                'error': (
+                    f"All extraction methods failed. yt-dlp: {ytdlp_error}. "
+                    f"yt-mp3-go: {result.get('error', 'Extraction failed')}"
+                ),
+                'suggestion': 'The video may be restricted. Try uploading an audio file instead.',
             }), 500
 
         log_info(f"Extraction complete for {sanitized_id}: {result['audio_url']}")
@@ -271,14 +321,14 @@ def extract_audio():
         log_error(f"External service timeout for {sanitized_id}")
         return jsonify({
             'success': False,
-            'error': 'Audio extraction service timed out',
-            'suggestion': 'The service may be busy. Please try again.'
+            'error': f'Audio extraction timed out. yt-dlp: {ytdlp_error}',
+            'suggestion': 'Try again or upload an audio file.',
         }), 504
 
     except Exception as e:
         log_error(f"Audio extraction error for {sanitized_id}: {e}")
         return jsonify({
             'success': False,
-            'error': str(e),
-            'suggestion': 'Please try again or use a different video.'
+            'error': f'yt-dlp: {ytdlp_error}; fallback: {e}',
+            'suggestion': 'Please try again or upload an audio file.',
         }), 500
