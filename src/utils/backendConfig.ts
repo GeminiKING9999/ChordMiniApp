@@ -48,10 +48,12 @@ export function getDirectPythonUrl(): string | null {
   // Runtime fallback: check for a meta tag injected by the hosting platform
   const meta = document.querySelector<HTMLMetaElement>('meta[name="x-python-api-url"]');
   if (meta?.content) return meta.content.replace(/\/+$/, '');
-  // Hardcoded production fallback — Netlify's build pipeline does not reliably
-  // bake NEXT_PUBLIC_* env vars into client bundles. This ensures direct Cloud
-  // Run calls always work regardless of build-time env var availability.
-  return 'https://chordmini-backend-607485523232.us-east1.run.app';
+  // Hardcoded production fallback used only if env vars were not baked at build
+  // time. Prefer setting NEXT_PUBLIC_PYTHON_API_URL to YOUR Cloud Run service
+  // after running scripts/deploy-backend-cloudrun.sh.
+  // Temporary shared upstream backend (original ChordMini) — replace once yours is live.
+  return process.env.NEXT_PUBLIC_PYTHON_API_URL_FALLBACK
+    || 'https://chordmini-backend-607485523232.us-east1.run.app';
 }
 
 /**

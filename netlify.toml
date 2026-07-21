@@ -3,10 +3,15 @@
   publish = ".next"
 
 # Build-time environment variables
-# These ensure NEXT_PUBLIC_* vars are baked into the client JS bundle.
-# Netlify UI env vars override these values if set.
+# Prefer setting these in Netlify UI (Site settings → Environment variables).
+# UI values override these defaults. After you deploy YOUR Cloud Run backend,
+# set NEXT_PUBLIC_PYTHON_API_URL and PYTHON_API_URL to that service URL.
 [build.environment]
+  # Temporary: original ChordMini Cloud Run (shared). Replace with yours:
+  #   ./scripts/deploy-backend-cloudrun.sh --project YOUR_GCP_PROJECT
   NEXT_PUBLIC_PYTHON_API_URL = "https://chordmini-backend-607485523232.us-east1.run.app"
+  NEXT_PUBLIC_BASE_URL = "https://eclecticemporium.store"
+  NEXT_PUBLIC_AUDIO_STRATEGY = "auto"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

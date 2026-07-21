@@ -13,6 +13,9 @@ import { normalizeThumbnailUrl, pickPreferredChannelTitle } from '@/utils/youtub
 
 /**
  * Environment-aware search function
+ *
+ * Production on Netlify/Vercel cannot reliably scrape YouTube (redirects / bot blocks).
+ * Prefer the official YouTube Data API when a key is present, then fall back.
  */
 async function performEnvironmentAwareSearch(query: string, limit: number = 10): Promise<Record<string, unknown>> {
   const env = detectEnvironment();
@@ -22,10 +25,99 @@ async function performEnvironmentAwareSearch(query: string, limit: number = 10):
   if (env.strategy === 'ytdlp' && env.isDevelopment) {
     // Use yt-dlp for localhost/development
     return await performYtDlpSearch(query, limit);
-  } else {
-    // Use youtube-search-api for production/Vercel
-    return await performYouTubeSearch(query, limit);
   }
+
+  // Production: official API first (reliable on serverless hosts)
+  const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY || process.env.YOUTUBE_API_KEY;
+  if (apiKey) {
+    try {
+      return await performYouTubeDataApiSearch(query, limit, apiKey.trim());
+    } catch (dataApiError) {
+      console.warn('YouTube Data API search failed, falling back to scraper:', dataApiError);
+    }
+  } else {
+    console.warn('No YouTube API key set; falling back to youtube-search-api scraper');
+  }
+
+  return await performYouTubeSearch(query, limit);
+}
+
+/**
+ * Official YouTube Data API v3 search (works on Netlify/Vercel)
+ */
+async function performYouTubeDataApiSearch(
+  query: string,
+  limit: number,
+  apiKey: string
+): Promise<Record<string, unknown>> {
+  console.log(`Performing YouTube Data API search for: "${query}"`);
+
+  const params = new URLSearchParams({
+    part: 'snippet',
+    type: 'video',
+    maxResults: String(Math.min(Math.max(limit, 1), 20)),
+    q: query,
+    key: apiKey,
+  });
+
+  const response = await fetch(
+    `https://www.googleapis.com/youtube/v3/search?${params.toString()}`,
+    { method: 'GET', headers: { Accept: 'application/json' } }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`YouTube Data API ${response.status}: ${errorText.slice(0, 300)}`);
+  }
+
+  const data = await response.json() as {
+    items?: Array<{
+      id?: { videoId?: string };
+      snippet?: {
+        title?: string;
+        description?: string;
+        channelTitle?: string;
+        publishedAt?: string;
+        thumbnails?: { medium?: { url?: string }; default?: { url?: string } };
+      };
+    }>;
+  };
+
+  const results = (data.items || [])
+    .map((item) => {
+      const videoId = item.id?.videoId;
+      if (!videoId) return null;
+      const snippet = item.snippet || {};
+      const channelName = pickPreferredChannelTitle(snippet.channelTitle) || 'Unknown Channel';
+      const thumb =
+        snippet.thumbnails?.medium?.url ||
+        snippet.thumbnails?.default?.url ||
+        normalizeThumbnailUrl(videoId, undefined, 'mqdefault');
+
+      return {
+        id: videoId,
+        title: snippet.title || 'Unknown Title',
+        description: snippet.description || '',
+        thumbnail: normalizeThumbnailUrl(videoId, thumb, 'mqdefault'),
+        uploader: channelName,
+        channelTitle: channelName,
+        channel: channelName,
+        uploadDate: snippet.publishedAt || '',
+        upload_date: snippet.publishedAt || '',
+        url: `https://www.youtube.com/watch?v=${videoId}`,
+      };
+    })
+    .filter(Boolean);
+
+  console.log(`YouTube Data API search successful: ${results.length} results`);
+
+  return {
+    success: true,
+    results,
+    total: results.length,
+    query,
+    source: 'youtube-data-api',
+  };
 }
 
 /**
