@@ -416,7 +416,6 @@ export const extractAudioFromYouTube = async (deps: AudioProcessingServiceDepend
       // Production: call Cloud Run yt-dlp extract directly (600s timeout, current yt-dlp).
       // Netlify/yt-mp3-go uses outdated extractors and dies on SABR/signature changes.
       // Localhost: same-origin /api/extract-audio (local yt-dlp).
-      const { getDirectPythonUrl } = await import('@/utils/backendConfig');
       const directPython = getDirectPythonUrl();
       const fetchUrl = directPython
         ? `${directPython}/api/extract-audio`
