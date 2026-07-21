@@ -135,6 +135,8 @@ def extract_audio_with_ytdlp(
         "noplaylist": True,
         "quiet": True,
         "no_warnings": False,
+        "retries": 3,
+        "fragment_retries": 3,
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",
@@ -142,9 +144,32 @@ def extract_audio_with_ytdlp(
                 "preferredquality": "128",
             }
         ],
-        # Prefer android client which often works without a JS runtime
-        "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
+        # Prefer clients that often work without a browser JS runtime on servers
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android_vr", "android", "ios", "mweb", "web"],
+            }
+        },
     }
+
+    # Optional cookies (Cloud Run datacenter IPs often need these for YouTube bot checks)
+    # Set YTDLP_COOKIES_FILE to a path, or YTDLP_COOKIES_B64 to base64-encoded Netscape cookies.txt
+    cookiefile = os.environ.get("YTDLP_COOKIES_FILE", "").strip()
+    cookies_b64 = os.environ.get("YTDLP_COOKIES_B64", "").strip()
+    if cookies_b64 and not cookiefile:
+        try:
+            import base64
+
+            cookie_path = os.path.join(tempfile.gettempdir(), "ytdlp_cookies.txt")
+            with open(cookie_path, "wb") as cf:
+                cf.write(base64.b64decode(cookies_b64))
+            cookiefile = cookie_path
+            log_info("Loaded yt-dlp cookies from YTDLP_COOKIES_B64")
+        except Exception as e:
+            log_error(f"Failed to decode YTDLP_COOKIES_B64: {e}")
+    if cookiefile and os.path.isfile(cookiefile):
+        ydl_opts["cookiefile"] = cookiefile
+        log_info(f"Using yt-dlp cookiefile: {cookiefile}")
 
     title = preferred_title or f"YouTube Video {video_id}"
     duration = 0.0
