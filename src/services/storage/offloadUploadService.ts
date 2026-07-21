@@ -6,7 +6,7 @@
  */
 
 import { createSafeTimeoutSignal } from '@/utils/environmentUtils';
-import { isLocalBackend } from '@/utils/backendConfig';
+import { isLocalBackend, getDirectPythonUrl } from '@/utils/backendConfig';
 
 export interface OffloadUploadResult {
   success: boolean;
@@ -239,6 +239,33 @@ class OffloadUploadService {
     const startTime = Date.now();
 
     try {
+      // Prefer Cloud Run firebase endpoint (avoids Netlify 502 / function timeouts).
+      const directPythonUrl = getDirectPythonUrl();
+      if (directPythonUrl) {
+        const formData = new FormData();
+        formData.append('firebase_url', offloadUrl);
+        formData.append('detector', detector);
+        if (detector === 'beat-transformer') {
+          formData.append('force', 'true');
+        }
+        const response = await fetch(`${directPythonUrl}/api/detect-beats-firebase`, {
+          method: 'POST',
+          body: formData,
+          signal: createSafeTimeoutSignal(800000),
+        });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(errorData.error || errorData.details || `Backend processing failed: ${response.status}`);
+        }
+        const result = await response.json();
+        return {
+          success: true,
+          data: result,
+          blobUrl: offloadUrl,
+          processingTime: Date.now() - startTime,
+        };
+      }
+
       const formData = new FormData();
       formData.append('blob_url', offloadUrl);
       formData.append('detector', detector);
@@ -284,11 +311,39 @@ class OffloadUploadService {
     const startTime = Date.now();
 
     try {
+      const chordDict = (model === 'btc-sl' || model === 'btc-pl') ? 'large_voca' : 'full';
+
+      // Prefer Cloud Run firebase endpoint (avoids Netlify 502 / function timeouts).
+      const directPythonUrl = getDirectPythonUrl();
+      if (directPythonUrl) {
+        const formData = new FormData();
+        formData.append('firebase_url', offloadUrl);
+        formData.append('model', model);
+        formData.append('detector', model);
+        formData.append('chord_dict', chordDict);
+        const response = await fetch(`${directPythonUrl}/api/recognize-chords-firebase`, {
+          method: 'POST',
+          body: formData,
+          signal: createSafeTimeoutSignal(800000),
+        });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(errorData.error || errorData.details || `Backend processing failed: ${response.status}`);
+        }
+        const result = await response.json();
+        return {
+          success: true,
+          data: result,
+          blobUrl: offloadUrl,
+          processingTime: Date.now() - startTime,
+        };
+      }
+
       const formData = new FormData();
       formData.append('blob_url', offloadUrl);
       formData.append('model', model);
       formData.append('detector', model);
-      formData.append('chord_dict', (model === 'btc-sl' || model === 'btc-pl') ? 'large_voca' : 'full');
+      formData.append('chord_dict', chordDict);
       formData.append('delete_blob', options.deleteAfterProcessing === false ? '0' : '1');
 
       const result = await this.postBlobProcessing('/api/recognize-chords-blob', formData);

@@ -12,7 +12,23 @@ import { offloadUploadService } from '@/services/storage/offloadUploadService';
 import { detectBeatsFromFile, detectBeatsWithRateLimit, detectBeatsFromFirebaseUrl } from '@/services/audio/beatDetectionService';
 import { synchronizeChords } from '@/utils/chordSynchronization';
 import { recognizeChordsWithRateLimit } from '@/services/chord-analysis/chordService';
+import { getDirectPythonUrl } from '@/utils/backendConfig';
 import type { AnalysisResult, BeatInfo, ChordDetectorType, ChordDetectionResult, BeatDetectionBackendResponse } from '@/types/audioAnalysis';
+
+/** Cloud Run accepts ~32MB request bodies; stay under that for direct uploads. */
+const DIRECT_CLOUD_RUN_MAX_BYTES = 28 * 1024 * 1024;
+
+/**
+ * Prefer direct Cloud Run when available (skips Netlify blob proxy that 502s on ML).
+ * Only force Firebase offload for very large files when direct URL exists.
+ */
+function shouldForceFirebaseOffload(fileSize: number): boolean {
+  const directUrl = getDirectPythonUrl();
+  if (directUrl) {
+    return fileSize > DIRECT_CLOUD_RUN_MAX_BYTES;
+  }
+  return offloadUploadService.shouldUseBlobUpload(fileSize);
+}
 
 import { getChordAnalysisWorker } from '@/workers/chordAnalysisClient';
 
@@ -291,13 +307,16 @@ export async function analyzeAudioWithRateLimit(
     if (audioInput.size > 100 * 1024 * 1024) throw new Error('Audio file is too large (>100MB). Please use a smaller file.');
     audioFile = audioInput;
     try { audioDuration = await getAudioDurationFromFile(audioFile); } catch (e) { console.warn(`⚠️ Could not detect audio duration: ${e}`); }
-    if (offloadUploadService.shouldUseBlobUpload(audioFile.size)) {
+    // Netlify/Vercel body limit forces "blob" for ~4.5MB+, but that path proxies
+    // through short-lived functions and often returns 502. When Cloud Run is
+    // configured, send the file (or firebase_url) straight to the Python backend.
+    if (shouldForceFirebaseOffload(audioFile.size)) {
       return handleBlobPath(audioFile, beatDetector, chordDetector, audioDuration, videoId);
     }
   } else if (typeof audioInput === 'string') {
     audioFile = await fetchFileFromUrl(audioInput, videoId);
     try { audioDuration = await getAudioDurationFromFile(audioFile); } catch (e) { console.warn(`⚠️ Could not detect audio duration: ${e}`); }
-    if (offloadUploadService.shouldUseBlobUpload(audioFile.size)) {
+    if (shouldForceFirebaseOffload(audioFile.size)) {
       return handleBlobPath(audioFile, beatDetector, chordDetector, audioDuration, videoId);
     }
   } else if (audioInput instanceof AudioBuffer) {
